@@ -21,9 +21,19 @@ export function AuthProvider ({ children }) {
   }, [user])
 
   async function login (usuario, pass) {
-    const usuarios = await db.list('usuarios')
+    let usuarios
+    try {
+      usuarios = await db.list('usuarios')
+    } catch (e) {
+      // En móvil esto suele pasar cuando el hostname no está autorizado como
+      // "Platform" en Appwrite, o por falta de conexión. Mostramos el motivo real.
+      return { ok: false, error: 'No se pudo conectar con el servidor. Verifica tu conexión y que el dominio esté autorizado en Appwrite. (' + (e?.message || e) + ')' }
+    }
+    // Comparación tolerante: ignora mayúsculas y espacios accidentales (autocompletado móvil).
+    const u = usuario.trim().toLowerCase()
+    const p = pass.trim()
     const found = usuarios.find(
-      u => u.usuario?.toLowerCase() === usuario.trim().toLowerCase() && u.pass === pass
+      x => x.usuario?.trim().toLowerCase() === u && (x.pass ?? '').trim() === p
     )
     if (!found) return { ok: false, error: 'Usuario o clave incorrectos' }
     const safe = { id: found.id, nombre: found.nombre, usuario: found.usuario, rol: found.rol }

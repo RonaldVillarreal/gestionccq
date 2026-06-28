@@ -90,6 +90,7 @@ const SCHEMA = {
     ['grado',            's', 64,  false],
     ['seccion',          's', 32,  false],
     ['representante_id', 's', 64,  false],
+    ['usuario_id',       's', 64,  false],  // vincula al usuario (login) del alumno
     ['moroso',           'b', false, false],
     ['monto_deuda',      'f', false, 0],
   ],
@@ -140,6 +141,37 @@ const SCHEMA = {
     ['valor',     's', 255,   false],  // ej: "18/20"
     ['detalle',   's', 5000,  false],
   ],
+  // Tareas que la maestra asigna a todo el grado/sección (las ve el alumno).
+  tareas: [
+    ['materia_id',    's', 64,   false],
+    ['maestro_id',    's', 64,   false],
+    ['grado',         's', 64,   false],
+    ['seccion',       's', 32,   false],
+    ['titulo',        's', 255,  false],
+    ['descripcion',   's', 5000, false],
+    ['fecha_entrega', 's', 32,   false],
+    ['color',         's', 16,   false],
+  ],
+  // Libros/PDF por materia (se guardan por enlace URL).
+  libros: [
+    ['materia_id',  's', 64,   false],
+    ['maestro_id',  's', 64,   false],
+    ['grado',       's', 64,   false],
+    ['seccion',     's', 32,   false],
+    ['titulo',      's', 255,  false],
+    ['autor',       's', 255,  false],
+    ['descripcion', 's', 2000, false],
+    ['url',         's', 2000, false],
+    ['color',       's', 16,   false],
+  ],
+  // Tareas que el alumno marca como hechas (sincroniza su progreso y puntos).
+  entregas: [
+    ['alumno_id',  's', 64,   false],
+    ['tarea_id',   's', 64,   false],
+    ['status',     's', 32,   false],  // entregada
+    ['comentario', 's', 2000, false],
+    ['fecha',      's', 32,   false],
+  ],
 }
 
 /* Índices recomendados (acelera los filtros del frontend). */
@@ -153,6 +185,9 @@ const INDEXES = {
   ],
   usuarios:        [['idx_usuario', 'unique', ['usuario']]],
   items_alumno:    [['idx_alumno', 'key', ['alumno_id']]],
+  tareas:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
+  libros:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
+  entregas:        [['idx_alumno', 'key', ['alumno_id']], ['idx_tarea', 'key', ['tarea_id']]],
 }
 
 async function createAttribute (col, def) {
@@ -200,6 +235,7 @@ async function main () {
     { nombre: 'Ronald',       usuario: 'Ronald',  pass: '10101987',   rol: 'admin' },
     { nombre: 'Ana Villarreal', usuario: 'anavillarreal', pass: 'maestro123', rol: 'maestro',   email: 'ana@colegio.edu' },
     { nombre: 'Carlos Rivas', usuario: 'crivas',  pass: 'aprobar123', rol: 'aprobador', email: 'carlos@colegio.edu' },
+    { nombre: 'Sofía González', usuario: 'sofia', pass: 'alumno123', rol: 'alumno' },
   ]
   // Evita duplicados si vuelves a correr el script.
   let existentes = []

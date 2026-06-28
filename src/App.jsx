@@ -17,11 +17,19 @@ import MiGrado from './pages/maestro/MiGrado'
 import Planificacion from './pages/maestro/Planificacion'
 import Boletas from './pages/maestro/Boletas'
 import Calificaciones from './pages/maestro/Calificaciones'
+import MaestroTareas from './pages/maestro/Tareas'
+import MaestroBiblioteca from './pages/maestro/Biblioteca'
+
+import AlumnoLayout from './components/AlumnoLayout'
+import AlumnoInicio from './pages/alumno/AlumnoInicio'
+import MisTareas from './pages/alumno/MisTareas'
+import Biblioteca from './pages/alumno/Biblioteca'
+import Logros from './pages/alumno/Logros'
 
 import Aprobador from './pages/Aprobador'
 
 /* Ruta a la que pertenece cada rol */
-const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador' }
+const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno' }
 
 /* Guardia: exige sesión y (opcional) un rol concreto.
    Si el rol no coincide, redirige al home del rol del usuario. */
@@ -64,9 +72,22 @@ export default function App () {
       >
         <Route index element={<MaestroDashboard />} />
         <Route path="mi-grado" element={<MiGrado />} />
+        <Route path="tareas" element={<MaestroTareas />} />
+        <Route path="biblioteca" element={<MaestroBiblioteca />} />
         <Route path="planificacion" element={<Planificacion />} />
         <Route path="boletas" element={<Boletas />} />
         <Route path="calificaciones" element={<Calificaciones />} />
+      </Route>
+
+      {/* Portal del alumno */}
+      <Route
+        path="/alumno"
+        element={<Protected rol="alumno"><AlumnoLayout /></Protected>}
+      >
+        <Route index element={<AlumnoInicio />} />
+        <Route path="tareas" element={<MisTareas />} />
+        <Route path="biblioteca" element={<Biblioteca />} />
+        <Route path="logros" element={<Logros />} />
       </Route>
 
       {/* Portal del aprobador */}

@@ -72,6 +72,15 @@ export function StatCard ({ icon: Icon, label, value, tone = 'primary', sub }) {
   )
 }
 
+export function Loading ({ label = 'Cargando…' }) {
+  return (
+    <div className="empty" style={{ padding: '64px 20px' }}>
+      <div className="spinner" />
+      <div style={{ fontSize: 14, color: 'var(--text-soft)', marginTop: 12 }}>{label}</div>
+    </div>
+  )
+}
+
 export function Empty ({ icon: Icon, title, hint }) {
   return (
     <div className="empty">

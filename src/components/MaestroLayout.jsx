@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, CalendarRange, FileText, ClipboardList, GraduationCap, LogOut, Menu, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, CalendarRange, FileText, ClipboardList, GraduationCap, BookOpenCheck, Library, LogOut, Menu, ChevronLeft } from 'lucide-react'
 import { Logo, ThemeToggle } from './UI'
 import { useAuth } from '../context/AuthContext'
 
 const nav = [
   { to: '/maestro', icon: LayoutDashboard, label: 'Inicio', end: true },
   { to: '/maestro/mi-grado', icon: GraduationCap, label: 'Mi grado' },
+  { to: '/maestro/tareas', icon: BookOpenCheck, label: 'Tareas' },
+  { to: '/maestro/biblioteca', icon: Library, label: 'Biblioteca' },
   { to: '/maestro/planificacion', icon: CalendarRange, label: 'Planificación' },
   { to: '/maestro/boletas', icon: FileText, label: 'Boletas' },
   { to: '/maestro/calificaciones', icon: ClipboardList, label: 'Calificaciones' },

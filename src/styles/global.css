@@ -148,5 +148,23 @@ input, select, textarea { font-family: inherit; }
 .empty { text-align: center; padding: 56px 20px; color: var(--text-faint); }
 .empty svg { margin: 0 auto 14px; opacity: .5; }
 
+.spinner { width: 34px; height: 34px; margin: 0 auto; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--primary); animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .scroll-x { overflow-x: auto; }
 .row-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ---------- Portal del alumno (toques amigables) ---------- */
+/* Tarjeta de libro: leve elevación al pasar el cursor, como tomar un libro. */
+.libro-card { transition: transform .14s, box-shadow .18s; }
+.libro-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+/* Confetti que cae al completar una tarea (solo emojis, sin dependencias). */
+.confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 200; overflow: hidden; }
+.confetti-pz { position: absolute; top: -40px; animation: confetti-fall 1.5s ease-in forwards; }
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .confetti-layer { display: none; } }

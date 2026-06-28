@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react'
-import { Plus, Upload, Trash2, GraduationCap, Download, Search, UserPlus } from 'lucide-react'
+import { Plus, Upload, Trash2, GraduationCap, Download, Search, UserPlus, KeyRound, Pencil } from 'lucide-react'
 import { Modal, Empty } from '../components/UI'
 import { useTable } from '../lib/useTable'
 import { readExcel, downloadTemplate } from '../lib/excel'
 
 const NIVELES = ['Primaria', 'Secundaria']
-const empty = { nombre: '', apellido: '', cedula: '', nivel: 'Primaria', grado: '', seccion: '', representante_id: '', moroso: false, monto_deuda: 0 }
+const empty = { nombre: '', apellido: '', cedula: '', nivel: 'Primaria', grado: '', seccion: '', representante_id: '', moroso: false, monto_deuda: 0, usuario: '', pass: '' }
 
 export default function Alumnos () {
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
+  const usuarios = useTable('usuarios')
   const [modal, setModal] = useState(false)
+  const [editId, setEditId] = useState(null)
   const [form, setForm] = useState(empty)
   const [q, setQ] = useState('')
   const [newRep, setNewRep] = useState(false)
@@ -30,6 +32,19 @@ export default function Alumnos () {
 
   function set (k, v) { setForm(f => ({ ...f, [k]: v })) }
 
+  // Abre el modal en modo edición con los datos del alumno (incluido su login si lo tiene).
+  function editar (a) {
+    const u = usuarios.rows.find(x => x.id === a.usuario_id)
+    setEditId(a.id)
+    setForm({
+      nombre: a.nombre || '', apellido: a.apellido || '', cedula: a.cedula || '',
+      nivel: a.nivel || 'Primaria', grado: a.grado || '', seccion: a.seccion || '',
+      representante_id: a.representante_id || '', moroso: !!a.moroso, monto_deuda: a.monto_deuda || 0,
+      usuario: u?.usuario || '', pass: '',
+    })
+    setModal(true)
+  }
+
   async function guardar () {
     if (!form.nombre || !form.apellido) return alert('Nombre y apellido son obligatorios.')
     let repId = form.representante_id
@@ -38,12 +53,29 @@ export default function Alumnos () {
       const r = await representantes.insert(repForm)
       repId = r.id
     }
-    await alumnos.insert({ ...form, representante_id: repId, monto_deuda: Number(form.monto_deuda) || 0 })
+    // Acceso al portal del alumno (opcional): reutiliza el usuario si ya existe,
+    // o crea uno nuevo con rol "alumno" cuando se indica usuario y contraseña.
+    let usuario_id = editId ? (alumnos.rows.find(a => a.id === editId)?.usuario_id || null) : null
+    if (form.usuario) {
+      const existente = usuarios.rows.find(u => u.usuario?.toLowerCase() === form.usuario.trim().toLowerCase())
+      if (existente) {
+        usuario_id = existente.id
+        // Si se escribió una nueva contraseña, la actualizamos en el usuario.
+        if (form.pass && form.pass !== existente.pass) await usuarios.update(existente.id, { pass: form.pass })
+      } else if (form.pass) {
+        const u = await usuarios.insert({ nombre: `${form.nombre} ${form.apellido}`, usuario: form.usuario.trim(), pass: form.pass, rol: 'alumno' })
+        usuario_id = u.id
+      }
+    }
+    const { usuario, pass, ...datos } = form
+    const payload = { ...datos, representante_id: repId, usuario_id, monto_deuda: Number(form.monto_deuda) || 0 }
+    if (editId) await alumnos.update(editId, payload)
+    else await alumnos.insert(payload)
     cerrar()
   }
 
   function cerrar () {
-    setModal(false); setForm(empty); setNewRep(false)
+    setModal(false); setEditId(null); setForm(empty); setNewRep(false)
     setRepForm({ nombre: '', apellido: '', cedula: '', telefono: '', email: '', parentesco: 'Madre' })
   }
 
@@ -115,7 +147,12 @@ export default function Alumnos () {
               <tbody>
                 {filtered.map(a => (
                   <tr key={a.id}>
-                    <td style={{ fontWeight: 600 }}>{a.nombre} {a.apellido}</td>
+                    <td style={{ fontWeight: 600 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {a.nombre} {a.apellido}
+                        {a.usuario_id && <span title="Tiene acceso al portal del alumno"><KeyRound size={13} color="var(--primary)" /></span>}
+                      </div>
+                    </td>
                     <td style={{ color: 'var(--text-soft)' }}>{a.cedula || '—'}</td>
                     <td><span className="badge badge-neutral">{a.nivel}</span></td>
                     <td>{a.grado} {a.seccion && `· ${a.seccion}`}</td>
@@ -124,9 +161,14 @@ export default function Alumnos () {
                       ? <span className="badge badge-danger">Moroso · ${a.monto_deuda}</span>
                       : <span className="badge badge-success">Al día</span>}</td>
                     <td>
-                      <button className="btn btn-ghost btn-sm" onClick={() => confirm('¿Eliminar alumno?') && alumnos.remove(a.id)}>
-                        <Trash2 size={15} />
-                      </button>
+                      <div className="row-actions">
+                        <button className="btn btn-ghost btn-sm" onClick={() => editar(a)} title="Editar / vincular acceso">
+                          <Pencil size={15} />
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => confirm('¿Eliminar alumno?') && alumnos.remove(a.id)} title="Eliminar">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -137,10 +179,10 @@ export default function Alumnos () {
       </div>
 
       {modal && (
-        <Modal title="Nuevo alumno" onClose={cerrar} wide
+        <Modal title={editId ? 'Editar alumno' : 'Nuevo alumno'} onClose={cerrar} wide
           footer={<>
             <button className="btn btn-ghost" onClick={cerrar}>Cancelar</button>
-            <button className="btn btn-primary" onClick={guardar}>Guardar alumno</button>
+            <button className="btn btn-primary" onClick={guardar}>{editId ? 'Guardar cambios' : 'Guardar alumno'}</button>
           </>}>
           <div className="grid-form">
             <div className="field"><label>Nombre *</label><input className="input" value={form.nombre} onChange={e => set('nombre', e.target.value)} /></div>
@@ -185,6 +227,20 @@ export default function Alumnos () {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Acceso al portal del alumno (opcional) */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-soft)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
+              <KeyRound size={14} /> Acceso al portal del alumno <span style={{ fontWeight: 400 }}>(opcional)</span>
+            </p>
+            <div className="grid-form">
+              <div className="field"><label>Usuario</label><input className="input" value={form.usuario} onChange={e => set('usuario', e.target.value)} placeholder="Ej: sofia" /></div>
+              <div className="field"><label>Contraseña</label><input className="input" value={form.pass} onChange={e => set('pass', e.target.value)} placeholder={editId ? 'Dejar en blanco para conservar' : ''} /></div>
+            </div>
+            <span style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 8, display: 'block' }}>
+              Si el usuario ya existe, se vincula a este alumno. Para crear uno nuevo, escribe usuario y contraseña.
+            </span>
           </div>
         </Modal>
       )}

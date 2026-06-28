@@ -18,7 +18,7 @@ export default function Login () {
     const res = await login(usuario, pass)
     setLoading(false)
     if (!res.ok) { setError(res.error); return }
-    const dest = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador' }[res.user.rol] || '/admin'
+    const dest = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno' }[res.user.rol] || '/admin'
     navigate(dest)
   }
 
@@ -39,11 +39,13 @@ export default function Login () {
 
           <div className="field">
             <label>Usuario</label>
-            <input className="input" value={usuario} onChange={e => setUsuario(e.target.value)} placeholder="Ej: Ronald" autoFocus />
+            <input className="input" value={usuario} onChange={e => setUsuario(e.target.value)} placeholder="Ej: Ronald"
+              autoFocus autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" inputMode="text" name="usuario" />
           </div>
           <div className="field">
             <label>Contraseña</label>
-            <input className="input" type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••" />
+            <input className="input" type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="••••••••"
+              autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="current-password" name="password" />
           </div>
 
           {error && <div className="badge badge-danger" style={{ alignSelf: 'flex-start' }}>{error}</div>}
