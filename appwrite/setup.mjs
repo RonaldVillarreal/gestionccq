@@ -113,6 +113,7 @@ const SCHEMA = {
     ['tipo',     's', 64,  false],
     ['telefono', 's', 64,  false],
     ['email',    's', 255, false],
+    ['ref_id',   's', 64,  false],  // vincula el registro de personal con su maestro
   ],
   materias: [
     ['nombre',     's', 128, false],
