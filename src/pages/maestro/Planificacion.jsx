@@ -8,6 +8,7 @@ import { useTable } from '../../lib/useTable'
 import { useAuth } from '../../context/AuthContext'
 import { tipoDeMateria } from '../../lib/materiasEspeciales'
 import CuadernoMatematico from '../../components/CuadernoMatematico'
+import EditorMateria from '../../components/EditorMateria'
 import Calculadora from '../../components/Calculadora'
 import AIAssistant from './AIAssistant'
 
@@ -113,7 +114,10 @@ export default function Planificacion () {
 
           <div className="field">
             <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <span>{tipo?.cuaderno ? 'Cuaderno de clase · operaciones y notas' : '¿Cómo abordarás el tema?'}</span>
+              <span>
+                {tipo?.editor === 'cuaderno' ? 'Cuaderno de clase · operaciones y notas'
+                  : '¿Cómo abordarás el tema?'}
+              </span>
               {tipo?.calculadora && (
                 <button className="btn btn-ghost btn-sm" onClick={() => setCalc(c => !c)} type="button">
                   <Calculator size={14} /> {calc ? 'Ocultar' : 'Calculadora'}
@@ -121,8 +125,11 @@ export default function Planificacion () {
               )}
             </label>
 
-            {tipo?.cuaderno ? (
+            {/* El tipo de materia decide el editor; las demás usan texto normal. */}
+            {tipo?.editor === 'cuaderno' ? (
               <CuadernoMatematico value={editor.contenido} onChange={v => setE('contenido', v)} />
+            ) : tipo?.editor === 'materia' ? (
+              <EditorMateria tipo={tipo} value={editor.contenido} onChange={v => setE('contenido', v)} />
             ) : (
               <textarea className="textarea" style={{ minHeight: 160 }} value={editor.contenido} onChange={e => setE('contenido', e.target.value)}
                 placeholder="Describe objetivos, actividades, recursos, evaluación…" />
@@ -248,7 +255,7 @@ export default function Planificacion () {
               <div className="card-pad">
                 <div style={{ fontWeight: 700, fontSize: 16 }}>{m.nombre}</div>
                 <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 2 }}>{total} planificación{total !== 1 && 'es'}</div>
-                {tipo && <span className="badge badge-primary" style={{ marginTop: 8 }}>Cuaderno + calculadora</span>}
+                {tipo && <span className="badge badge-primary" style={{ marginTop: 8 }}>{tipo.insignia}</span>}
               </div>
             </button>
           )
@@ -266,7 +273,7 @@ export default function Planificacion () {
             <input className="input" value={matForm.nombre} onChange={e => setMatForm({ ...matForm, nombre: e.target.value })} placeholder="Ej: Geografía" />
             {tipoDeMateria(matForm.nombre) && (
               <span className="badge badge-primary" style={{ alignSelf: 'flex-start', marginTop: 6 }}>
-                {tipoDeMateria(matForm.nombre).emoji} Se activará el cuaderno cuadriculado y la calculadora
+                {tipoDeMateria(matForm.nombre).emoji} Se activará: {tipoDeMateria(matForm.nombre).insignia}
               </span>
             )}
           </div>

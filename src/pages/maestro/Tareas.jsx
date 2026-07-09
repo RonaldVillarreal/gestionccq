@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Plus, Trash2, CalendarClock, BookOpenCheck, GraduationCap, Users } from 'lucide-react'
+import { Plus, Trash2, CalendarClock, BookOpenCheck, GraduationCap, Users, Map } from 'lucide-react'
 import { Modal, Empty } from '../../components/UI'
+import MapaBuscador from '../../components/MapaBuscador'
+import VistaContenido from '../../components/VistaContenido'
 import { useTable } from '../../lib/useTable'
 import { useAuth } from '../../context/AuthContext'
 import { materiaEmoji } from '../../lib/gamification'
+import { MARCA_MAPA } from '../../lib/contenidoMateria'
 
 const empty = { materia_id: '', titulo: '', descripcion: '', fecha_entrega: '' }
 
@@ -17,6 +20,7 @@ export default function Tareas () {
 
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState(empty)
+  const [buscarMapa, setBuscarMapa] = useState(false)
 
   const miMaestro = useMemo(() => maestros.rows.find(m => m.usuario_id === user?.id), [maestros.rows, user])
   const misMaterias = useMemo(() => (miMaestro ? materias.rows.filter(m => m.maestro_id === miMaestro.id) : []), [materias.rows, miMaestro])
@@ -94,7 +98,11 @@ export default function Tareas () {
                     <span style={{ fontWeight: 700, fontSize: 16 }}>{t.titulo}</span>
                     {mat && <span className="badge badge-neutral">{mat.nombre}</span>}
                   </div>
-                  {t.descripcion && <p style={{ fontSize: 14, color: 'var(--text-soft)', marginTop: 6 }}>{t.descripcion}</p>}
+                  {t.descripcion && (
+                    <div style={{ marginTop: 6, color: 'var(--text-soft)' }}>
+                      <VistaContenido texto={t.descripcion} vacio="" />
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: 12, marginTop: 9, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--text-faint)' }}>
                     {t.fecha_entrega && <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><CalendarClock size={14} /> Entrega: {t.fecha_entrega}</span>}
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Users size={14} /> {n}/{total} entregadas</span>
@@ -128,10 +136,25 @@ export default function Tareas () {
           <div className="field"><label>Título *</label>
             <input className="input" value={form.titulo} onChange={e => set('titulo', e.target.value)} placeholder="Ej: Resolver ejercicios de la página 24" />
           </div>
-          <div className="field"><label>Instrucciones para el alumno</label>
+          <div className="field">
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <span>Instrucciones para el alumno</span>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setBuscarMapa(true)}>
+                <Map size={14} /> Insertar mapa
+              </button>
+            </label>
             <textarea className="input" rows={3} value={form.descripcion} onChange={e => set('descripcion', e.target.value)}
               placeholder="Explica la tarea con palabras claras y motivadoras 😊" />
+            <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>
+              El alumno verá el mapa dibujado, no el texto.
+            </span>
           </div>
+
+          {buscarMapa && (
+            <MapaBuscador onClose={() => setBuscarMapa(false)}
+              onInsertar={(m) => set('descripcion',
+                `${form.descripcion ? form.descripcion + '\n' : ''}${MARCA_MAPA} ${m.nombre} | ${m.lat} | ${m.lon} | ${m.zoom}`)} />
+          )}
         </Modal>
       )}
     </div>

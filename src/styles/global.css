@@ -182,6 +182,72 @@ input, select, textarea { font-family: inherit; }
 .chip-mal { background: var(--danger-soft); color: var(--danger); cursor: pointer; }
 .chip-err { background: var(--warning-soft); color: var(--warning); font-weight: 500; }
 
+/* ---------- Editor de fichas en filas (Geografía, Historia, Religión) ---------- */
+.filas-tabla { border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); overflow: hidden; }
+.filas-fila { display: grid; align-items: center; gap: 8px; padding: 4px 10px;
+  border-bottom: 1px solid var(--border); }
+.filas-tabla .filas-fila:last-child { border-bottom: none; }
+.filas-head { background: var(--surface); padding: 9px 10px; }
+.filas-head span { font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-faint); font-weight: 600; }
+.filas-input { background: transparent; border: none; outline: none; color: var(--text);
+  font-size: 14px; padding: 9px 6px; border-radius: 6px; min-width: 0; width: 100%; }
+.filas-input:focus { background: var(--surface); box-shadow: 0 0 0 2px var(--primary-soft); }
+.filas-input::placeholder { color: var(--text-faint); }
+.filas-celda { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+/* Chip de validación de una columna (ej: la cita bíblica interpretada) */
+.filas-chip { align-self: flex-start; max-width: 100%; padding: 1px 7px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; margin: 0 0 4px 6px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filas-chip.chip-ok { background: var(--success-soft); color: var(--success); }
+.filas-chip.chip-aviso { background: var(--warning-soft); color: var(--warning); font-weight: 500; }
+.filas-marca { text-align: center; font-size: 15px; opacity: .35; user-select: none; }
+.filas-borrar { color: var(--text-faint); padding: 5px; border-radius: 6px; opacity: 0; transition: opacity .12s; }
+.filas-fila:hover .filas-borrar { opacity: 1; }
+.filas-borrar:hover { color: var(--danger); background: var(--danger-soft); }
+@media (max-width: 640px) {
+  .filas-fila { grid-template-columns: 1fr !important; gap: 2px; padding: 8px 10px; }
+  .filas-head { display: none; }
+  .filas-input { background: var(--surface); border: 1px solid var(--border); }
+}
+
+/* ---------- Vista de solo lectura (aprobador y alumno) ---------- */
+.vc-ficha { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px;
+  border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); }
+.vc-marca { font-size: 15px; line-height: 1.5; flex-shrink: 0; }
+
+/* ---------- Línea de tiempo (Historia) ---------- */
+.linea-tiempo { position: relative; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); padding: 14px 16px; }
+.linea-tiempo-titulo { font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-faint); font-weight: 600; margin-bottom: 12px; }
+.lt-item { display: grid; grid-template-columns: 14px 92px 1fr; align-items: start; gap: 12px;
+  padding-bottom: 14px; position: relative; }
+.lt-item:last-child { padding-bottom: 0; }
+/* Línea vertical que une los puntos */
+.lt-item:not(:last-child)::before { content: ''; position: absolute; left: 6px; top: 16px; bottom: 0;
+  width: 2px; background: var(--border); }
+.lt-punto { width: 13px; height: 13px; border-radius: 50%; background: var(--accent);
+  border: 2px solid var(--surface); box-shadow: 0 0 0 2px var(--accent); margin-top: 3px; z-index: 1; }
+.lt-fecha { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 14px;
+  color: var(--primary); }
+@media (max-width: 560px) { .lt-item { grid-template-columns: 14px 1fr; } .lt-fecha { grid-column: 2; } }
+
+/* ---------- Mapas (OpenStreetMap embebido) ---------- */
+.mapa-panel { position: fixed; right: 24px; bottom: 24px; z-index: 120; width: 330px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  animation: pop .18s; }
+.mapa-preview { width: 100%; height: 190px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface-2); }
+.mapa-card { border: 1px solid var(--border); border-radius: var(--radius-sm);
+  overflow: hidden; background: var(--surface); }
+.mapa-card iframe { width: 100%; height: 170px; border: none; display: block; background: var(--surface-2); }
+.mapa-card-pie { display: flex; align-items: center; gap: 6px; padding: 7px 10px;
+  border-top: 1px solid var(--border); }
+@media (max-width: 560px) { .mapa-panel { right: 12px; left: 12px; width: auto; bottom: 12px; } }
+
 /* ---------- Calculadora flotante ---------- */
 .calc { position: fixed; right: 24px; bottom: 24px; z-index: 120; width: 268px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);

@@ -4,6 +4,7 @@ import {
   CheckCircle2, RefreshCw, Clock, LogOut, CalendarRange, BookOpen, X, Send
 } from 'lucide-react'
 import { Logo, ThemeToggle, Modal, Empty } from '../components/UI'
+import VistaContenido from '../components/VistaContenido'
 import { useTable } from '../lib/useTable'
 import { useAuth } from '../context/AuthContext'
 
@@ -121,8 +122,8 @@ export default function Aprobador () {
             <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><CalendarRange size={14} /> {review.fecha}</span>
             <span>{maestroName(review.maestro_id)}</span>
           </div>
-          <div className="card card-pad" style={{ background: 'var(--surface-2)', whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6 }}>
-            {review.contenido || 'Sin contenido.'}
+          <div className="card card-pad" style={{ background: 'var(--surface-2)' }}>
+            <VistaContenido texto={review.contenido} />
           </div>
           {review.imagenes?.length > 0 && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

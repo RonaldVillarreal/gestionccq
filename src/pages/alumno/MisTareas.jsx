@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CheckCircle2, Circle, CalendarClock, Sparkles, PartyPopper, UserRound } from 'lucide-react'
 import { Empty, Loading } from '../../components/UI'
+import VistaContenido from '../../components/VistaContenido'
 import { useAlumno } from '../../lib/useAlumno'
 import { materiaEmoji, PUNTOS_POR_TAREA } from '../../lib/gamification'
 
@@ -95,7 +96,11 @@ export default function MisTareas () {
                   <span style={{ fontWeight: 700, fontSize: 16, textDecoration: hecha ? 'line-through' : 'none' }}>{t.titulo}</span>
                   {mat && <span className="badge badge-neutral">{mat.nombre}</span>}
                 </div>
-                {t.descripcion && <p style={{ fontSize: 14, color: 'var(--text-soft)', marginTop: 7 }}>{t.descripcion}</p>}
+                {t.descripcion && (
+                  <div style={{ marginTop: 7, color: 'var(--text-soft)' }}>
+                    <VistaContenido texto={t.descripcion} vacio="" />
+                  </div>
+                )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 9, flexWrap: 'wrap' }}>
                   {t.fecha_entrega && <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: 'var(--text-faint)' }}>
                     <CalendarClock size={14} /> Entrega: {t.fecha_entrega}
