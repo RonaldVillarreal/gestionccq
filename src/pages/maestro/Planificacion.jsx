@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
 import {
   Plus, ChevronLeft, BookOpen, CalendarRange, Image as ImageIcon, Palette,
-  Send, Sparkles, ArrowLeft, Trash2, CheckCircle2, Clock, RefreshCw
+  Send, Sparkles, ArrowLeft, Trash2, CheckCircle2, Clock, RefreshCw, Calculator
 } from 'lucide-react'
 import { Modal, Empty } from '../../components/UI'
 import { useTable } from '../../lib/useTable'
 import { useAuth } from '../../context/AuthContext'
+import { tipoDeMateria } from '../../lib/materiasEspeciales'
+import CuadernoMatematico from '../../components/CuadernoMatematico'
+import Calculadora from '../../components/Calculadora'
 import AIAssistant from './AIAssistant'
 
 const PALETA = ['#2A2F6B', '#C0392B', '#2E7D52', '#C99A2E', '#7B4FB8', '#0E7490', '#B45309']
@@ -29,6 +32,7 @@ export default function Planificacion () {
   const [matForm, setMatForm] = useState({ nombre: '', color: PALETA[0] })
   const [editor, setEditor] = useState(null) // plan en edición/creación
   const [ai, setAi] = useState(false)
+  const [calc, setCalc] = useState(false)
 
   const miMaestroId = useMemo(() => {
     const m = maestros.rows.find(x => x.usuario_id === user?.id)
@@ -74,12 +78,15 @@ export default function Planificacion () {
   // ---------- Vista editor ----------
   if (editor) {
     const materia = materias.rows.find(m => m.id === editor.materia_id)
+    // El tipo de materia decide qué capacidades tiene el editor.
+    const tipo = tipoDeMateria(materia?.nombre)
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 860 }}>
-        <button className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setEditor(null)}><ArrowLeft size={15} /> Volver</button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => { setEditor(null); setCalc(false) }}><ArrowLeft size={15} /> Volver</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ width: 14, height: 14, borderRadius: 4, background: editor.color }} />
           <h1 style={{ fontSize: 26 }}>{editor.id ? 'Editar' : 'Nueva'} planificación · {materia?.nombre}</h1>
+          {tipo && <span className="badge badge-primary">{tipo.emoji} Modo {tipo.label}</span>}
         </div>
 
         {editor.status === 'correccion' && editor.correcciones && (
@@ -105,9 +112,21 @@ export default function Planificacion () {
           </div>
 
           <div className="field">
-            <label>¿Cómo abordarás el tema?</label>
-            <textarea className="textarea" style={{ minHeight: 160 }} value={editor.contenido} onChange={e => setE('contenido', e.target.value)}
-              placeholder="Describe objetivos, actividades, recursos, evaluación…" />
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <span>{tipo?.cuaderno ? 'Cuaderno de clase · operaciones y notas' : '¿Cómo abordarás el tema?'}</span>
+              {tipo?.calculadora && (
+                <button className="btn btn-ghost btn-sm" onClick={() => setCalc(c => !c)} type="button">
+                  <Calculator size={14} /> {calc ? 'Ocultar' : 'Calculadora'}
+                </button>
+              )}
+            </label>
+
+            {tipo?.cuaderno ? (
+              <CuadernoMatematico value={editor.contenido} onChange={v => setE('contenido', v)} />
+            ) : (
+              <textarea className="textarea" style={{ minHeight: 160 }} value={editor.contenido} onChange={e => setE('contenido', e.target.value)}
+                placeholder="Describe objetivos, actividades, recursos, evaluación…" />
+            )}
           </div>
 
           <div className="field">
@@ -145,6 +164,11 @@ export default function Planificacion () {
         </div>
 
         {ai && <AIAssistant materia={materia?.nombre} onClose={() => setAi(false)} onInsert={(txt) => setE('contenido', (editor.contenido ? editor.contenido + '\n\n' : '') + txt)} />}
+
+        {calc && tipo?.calculadora && (
+          <Calculadora onClose={() => setCalc(false)}
+            onInsertar={(linea) => setE('contenido', (editor.contenido ? editor.contenido + '\n' : '') + linea)} />
+        )}
       </div>
     )
   }
@@ -211,17 +235,20 @@ export default function Planificacion () {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 18 }}>
         {materias.rows.map(m => {
           const total = planesDeMateria(m.id).length
+          const tipo = tipoDeMateria(m.nombre)
           return (
             <button key={m.id} className="card" onClick={() => setSelMateria(m)}
               style={{ textAlign: 'left', cursor: 'pointer', overflow: 'hidden', transition: 'transform .12s' }}
               onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
-              <div style={{ height: 70, background: `linear-gradient(135deg, ${m.color}, ${m.color}cc)`, display: 'flex', alignItems: 'flex-end', padding: 14 }}>
+              <div style={{ height: 70, background: `linear-gradient(135deg, ${m.color}, ${m.color}cc)`, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: 14 }}>
                 <BookOpen size={26} color="#fff" />
+                {tipo && <span style={{ fontSize: 24 }} title={`Modo ${tipo.label}`}>{tipo.emoji}</span>}
               </div>
               <div className="card-pad">
                 <div style={{ fontWeight: 700, fontSize: 16 }}>{m.nombre}</div>
                 <div style={{ fontSize: 13, color: 'var(--text-faint)', marginTop: 2 }}>{total} planificación{total !== 1 && 'es'}</div>
+                {tipo && <span className="badge badge-primary" style={{ marginTop: 8 }}>Cuaderno + calculadora</span>}
               </div>
             </button>
           )
@@ -234,7 +261,15 @@ export default function Planificacion () {
             <button className="btn btn-ghost" onClick={() => setNewMateria(false)}>Cancelar</button>
             <button className="btn btn-primary" onClick={crearMateria}>Crear materia</button>
           </>}>
-          <div className="field"><label>Nombre</label><input className="input" value={matForm.nombre} onChange={e => setMatForm({ ...matForm, nombre: e.target.value })} placeholder="Ej: Geografía" /></div>
+          <div className="field">
+            <label>Nombre</label>
+            <input className="input" value={matForm.nombre} onChange={e => setMatForm({ ...matForm, nombre: e.target.value })} placeholder="Ej: Geografía" />
+            {tipoDeMateria(matForm.nombre) && (
+              <span className="badge badge-primary" style={{ alignSelf: 'flex-start', marginTop: 6 }}>
+                {tipoDeMateria(matForm.nombre).emoji} Se activará el cuaderno cuadriculado y la calculadora
+              </span>
+            )}
+          </div>
           <div className="field">
             <label>Color</label>
             <div style={{ display: 'flex', gap: 8 }}>
