@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Home, BookOpenCheck, Library, Trophy, LogOut, Menu, ChevronLeft, Star } from 'lucide-react'
+import { Home, BookOpenCheck, Library, Trophy, Inbox, LogOut, Menu, ChevronLeft, Star } from 'lucide-react'
 import { ThemeToggle } from './UI'
 import { useAlumno } from '../lib/useAlumno'
 import { useAuth } from '../context/AuthContext'
+import { useInbox } from '../lib/inbox'
 import { tituloNivel } from '../lib/gamification'
 
 const nav = [
   { to: '/alumno', icon: Home, label: 'Inicio', end: true },
   { to: '/alumno/tareas', icon: BookOpenCheck, label: 'Mis tareas' },
+  { to: '/alumno/bandeja', icon: Inbox, label: 'Bandeja', inbox: true },
   { to: '/alumno/biblioteca', icon: Library, label: 'Biblioteca' },
   { to: '/alumno/logros', icon: Trophy, label: 'Mis logros' },
 ]
@@ -17,6 +19,7 @@ export default function AlumnoLayout () {
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 820)
   const { user, alumno, progreso } = useAlumno()
   const { logout } = useAuth()
+  const { noLeidas } = useInbox()
   const navigate = useNavigate()
   const nombre = (alumno?.nombre || user?.nombre || '').split(' ')[0]
 
@@ -57,17 +60,25 @@ export default function AlumnoLayout () {
         )}
 
         <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
-          {nav.map(item => (
-            <NavLink key={item.to} to={item.to} end={item.end}
-              style={({ isActive }) => ({
-                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px',
-                borderRadius: 12, fontSize: 14.5, fontWeight: 700, color: '#fff',
-                background: isActive ? 'rgba(255,255,255,.22)' : 'transparent',
-                justifyContent: open ? 'flex-start' : 'center',
-              })} title={item.label}>
-              <item.icon size={20} style={{ flexShrink: 0 }} />{open && item.label}
-            </NavLink>
-          ))}
+          {nav.map(item => {
+            const badge = item.inbox && noLeidas > 0
+            return (
+              <NavLink key={item.to} to={item.to} end={item.end}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 13px',
+                  borderRadius: 12, fontSize: 14.5, fontWeight: 700, color: '#fff',
+                  background: isActive ? 'rgba(255,255,255,.22)' : 'transparent',
+                  justifyContent: open ? 'flex-start' : 'center',
+                })} title={item.label}>
+                <span style={{ position: 'relative', flexShrink: 0, display: 'grid', placeItems: 'center' }}>
+                  <item.icon size={20} />
+                  {badge && !open && <span style={{ position: 'absolute', top: -4, right: -6, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 99, background: 'var(--accent)', color: '#1C1E2E', fontSize: 10, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{noLeidas}</span>}
+                </span>
+                {open && item.label}
+                {badge && open && <span style={{ marginLeft: 'auto', minWidth: 20, height: 20, padding: '0 6px', borderRadius: 99, background: 'var(--accent)', color: '#1C1E2E', fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{noLeidas}</span>}
+              </NavLink>
+            )
+          })}
         </nav>
 
         <div style={{ padding: 12, borderTop: '1px solid rgba(255,255,255,.14)' }}>

@@ -154,8 +154,10 @@ export default function Administrativo () {
             <div className="field"><label>Rol *</label>
               <select className="select" value={form.rol} onChange={e => setForm({ ...form, rol: e.target.value })}>
                 <option value="admin">Administrador</option>
+                <option value="administradora">Administradora</option>
                 <option value="maestro">Maestro</option>
                 <option value="aprobador">Aprobador</option>
+                <option value="alumno">Alumno</option>
               </select>
             </div>
             <div className="field"><label>Usuario *</label><input className="input" value={form.usuario} onChange={e => setForm({ ...form, usuario: e.target.value })} /></div>

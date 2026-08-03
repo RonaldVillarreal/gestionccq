@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, CalendarClock, Sparkles, PartyPopper, UserRound }
 import { Empty, Loading } from '../../components/UI'
 import VistaContenido from '../../components/VistaContenido'
 import { useAlumno } from '../../lib/useAlumno'
+import { notificar } from '../../lib/inbox'
 import { materiaEmoji, PUNTOS_POR_TAREA } from '../../lib/gamification'
 
 const hoyISO = () => new Date().toISOString().slice(0, 10)
@@ -19,7 +20,7 @@ function vencimiento (fecha) {
 }
 
 export default function MisTareas () {
-  const { alumno, misMaterias, misTareas, misEntregas, loading, tablas } = useAlumno()
+  const { user, alumno, maestro, misMaterias, misTareas, misEntregas, loading, tablas } = useAlumno()
   const [filtro, setFiltro] = useState('pendientes') // pendientes | hechas | todas
   const [fiesta, setFiesta] = useState(false)
   const [guardando, setGuardando] = useState(null)
@@ -44,7 +45,13 @@ export default function MisTareas () {
       if (existente) {
         await tablas.entregas.remove(existente.id)
       } else {
-        await tablas.entregas.insert({ alumno_id: alumno.id, tarea_id: tarea.id, status: 'entregada', comentario: '', fecha: hoyISO() })
+        const ent = await tablas.entregas.insert({ alumno_id: alumno.id, tarea_id: tarea.id, status: 'entregada', comentario: '', fecha: hoyISO() })
+        // Avisa a la bandeja del maestro que el alumno completó la tarea.
+        if (maestro?.usuario_id) await notificar({
+          para: maestro.usuario_id, de: user?.id, tipo: 'tarea_entregada',
+          titulo: '✅ Tarea completada',
+          cuerpo: `${alumno.nombre} ${alumno.apellido} completó «${tarea.titulo}».`, ref_id: ent?.id || '',
+        })
         setFiesta(true)
         setTimeout(() => setFiesta(false), 1600)
       }

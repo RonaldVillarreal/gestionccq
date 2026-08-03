@@ -1,10 +1,10 @@
-import { Lock, UserRound } from 'lucide-react'
+import { Lock, UserRound, Award } from 'lucide-react'
 import { Empty, Loading } from '../../components/UI'
 import { useAlumno } from '../../lib/useAlumno'
 import { logrosDesbloqueados, tituloNivel } from '../../lib/gamification'
 
 export default function Logros () {
-  const { alumno, progreso, loading } = useAlumno()
+  const { alumno, progreso, misMedallas, loading } = useAlumno()
   const logros = logrosDesbloqueados(progreso)
   const conseguidos = logros.filter(l => l.listo).length
 
@@ -37,7 +37,34 @@ export default function Logros () {
         </div>
       </div>
 
-      {/* Cuadrícula de medallas */}
+      {/* Medallas otorgadas por la maestra al revisar tareas */}
+      <section>
+        <h3 style={{ fontSize: 19, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Award size={19} color="var(--accent)" /> Medallas de tu maestra
+        </h3>
+        <p style={{ fontSize: 13, color: 'var(--text-soft)', marginBottom: 14 }}>
+          {misMedallas.length
+            ? `Has recibido ${misMedallas.length} medalla${misMedallas.length === 1 ? '' : 's'} · +${progreso.puntosMedallas} ⭐`
+            : 'Aún no tienes medallas. ¡Entrega buenas tareas y tu maestra podría premiarte! 💪'}
+        </p>
+        {misMedallas.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 14 }}>
+            {misMedallas.map(m => (
+              <div key={m.id} className="card card-pad" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', border: '2px solid var(--accent)' }}>
+                <div style={{ fontSize: 38, lineHeight: 1 }}>{m.emoji}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{m.titulo} <span className="badge badge-accent">+{m.puntos} ⭐</span></div>
+                  {m.mensaje && <div style={{ fontSize: 13, color: 'var(--text-soft)', marginTop: 3 }}>“{m.mensaje}”</div>}
+                  <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 5 }}>{(m.created_at || '').slice(0, 10)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Cuadrícula de logros automáticos */}
+      <h3 style={{ fontSize: 19, marginBottom: -6 }}>🎯 Logros por tu esfuerzo</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 16 }}>
         {logros.map(l => (
           <div key={l.id} className="card" style={{

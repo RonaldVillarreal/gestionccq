@@ -18,6 +18,7 @@ export function useAlumno () {
   const tareas   = useTable('tareas')
   const libros   = useTable('libros')
   const entregas = useTable('entregas')
+  const medallas = useTable('medallas')
 
   const alumno = useMemo(
     () => alumnos.rows.find(a => a.usuario_id === user?.id) || null,
@@ -52,13 +53,18 @@ export function useAlumno () {
     () => (alumno ? entregas.rows.filter(e => e.alumno_id === alumno.id) : []),
     [entregas.rows, alumno]
   )
+  const misMedallas = useMemo(
+    () => (alumno ? medallas.rows.filter(m => m.alumno_id === alumno.id)
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')) : []),
+    [medallas.rows, alumno]
+  )
 
-  const progreso = useMemo(() => calcularProgreso(misEntregas), [misEntregas])
+  const progreso = useMemo(() => calcularProgreso(misEntregas, misMedallas), [misEntregas, misMedallas])
 
   const loading = alumnos.loading || maestros.loading || tareas.loading || entregas.loading
 
   return {
-    user, alumno, maestro, misMaterias, misTareas, misLibros, misEntregas, progreso, loading,
-    tablas: { alumnos, maestros, materias, tareas, libros, entregas },
+    user, alumno, maestro, misMaterias, misTareas, misLibros, misEntregas, misMedallas, progreso, loading,
+    tablas: { alumnos, maestros, materias, tareas, libros, entregas, medallas },
   }
 }

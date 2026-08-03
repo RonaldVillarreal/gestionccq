@@ -19,6 +19,7 @@ import Boletas from './pages/maestro/Boletas'
 import Calificaciones from './pages/maestro/Calificaciones'
 import MaestroTareas from './pages/maestro/Tareas'
 import MaestroBiblioteca from './pages/maestro/Biblioteca'
+import Fichas from './pages/maestro/Fichas'
 
 import AlumnoLayout from './components/AlumnoLayout'
 import AlumnoInicio from './pages/alumno/AlumnoInicio'
@@ -26,10 +27,17 @@ import MisTareas from './pages/alumno/MisTareas'
 import Biblioteca from './pages/alumno/Biblioteca'
 import Logros from './pages/alumno/Logros'
 
+import Bandeja from './pages/Bandeja'
+
+import AdministradoraLayout from './components/AdministradoraLayout'
+import AdminvaInicio from './pages/administradora/AdminvaInicio'
+import Cobranzas from './pages/administradora/Cobranzas'
+import Facturacion from './pages/administradora/Facturacion'
+
 import Aprobador from './pages/Aprobador'
 
 /* Ruta a la que pertenece cada rol */
-const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno' }
+const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno', administradora: '/administracion' }
 
 /* Guardia: exige sesión y (opcional) un rol concreto.
    Si el rol no coincide, redirige al home del rol del usuario. */
@@ -73,8 +81,10 @@ export default function App () {
         <Route index element={<MaestroDashboard />} />
         <Route path="mi-grado" element={<MiGrado />} />
         <Route path="tareas" element={<MaestroTareas />} />
+        <Route path="bandeja" element={<Bandeja />} />
         <Route path="biblioteca" element={<MaestroBiblioteca />} />
         <Route path="planificacion" element={<Planificacion />} />
+        <Route path="fichas" element={<Fichas />} />
         <Route path="boletas" element={<Boletas />} />
         <Route path="calificaciones" element={<Calificaciones />} />
       </Route>
@@ -86,8 +96,21 @@ export default function App () {
       >
         <Route index element={<AlumnoInicio />} />
         <Route path="tareas" element={<MisTareas />} />
+        <Route path="bandeja" element={<Bandeja />} />
         <Route path="biblioteca" element={<Biblioteca />} />
         <Route path="logros" element={<Logros />} />
+      </Route>
+
+      {/* Portal de la administradora */}
+      <Route
+        path="/administracion"
+        element={<Protected rol="administradora"><AdministradoraLayout /></Protected>}
+      >
+        <Route index element={<AdminvaInicio />} />
+        <Route path="cobranzas" element={<Cobranzas />} />
+        <Route path="facturacion" element={<Facturacion />} />
+        <Route path="alumnos" element={<Alumnos />} />
+        <Route path="representantes" element={<Representantes />} />
       </Route>
 
       {/* Portal del aprobador */}

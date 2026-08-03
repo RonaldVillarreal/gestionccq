@@ -14,7 +14,8 @@ import { seed } from '../data/seed'
 const TABLES = [
   'alumnos', 'maestros', 'representantes', 'personal',
   'materias', 'planificaciones', 'usuarios', 'items_alumno',
-  'tareas', 'libros', 'entregas',
+  'tareas', 'libros', 'entregas', 'facturas',
+  'medallas', 'notificaciones', 'fichas',
 ]
 
 const LS_KEY = 'colegio_db_v1'

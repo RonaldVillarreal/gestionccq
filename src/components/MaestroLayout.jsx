@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, CalendarRange, FileText, ClipboardList, GraduationCap, BookOpenCheck, Library, LogOut, Menu, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, CalendarRange, FileText, ClipboardList, GraduationCap, BookOpenCheck, Library, Inbox, ScrollText, LogOut, Menu, ChevronLeft } from 'lucide-react'
 import { Logo, ThemeToggle } from './UI'
 import { useAuth } from '../context/AuthContext'
+import { useInbox } from '../lib/inbox'
 
 const nav = [
   { to: '/maestro', icon: LayoutDashboard, label: 'Inicio', end: true },
   { to: '/maestro/mi-grado', icon: GraduationCap, label: 'Mi grado' },
   { to: '/maestro/tareas', icon: BookOpenCheck, label: 'Tareas' },
+  { to: '/maestro/bandeja', icon: Inbox, label: 'Bandeja', inbox: true },
   { to: '/maestro/biblioteca', icon: Library, label: 'Biblioteca' },
   { to: '/maestro/planificacion', icon: CalendarRange, label: 'Planificación' },
+  { to: '/maestro/fichas', icon: ScrollText, label: 'Fichas' },
   { to: '/maestro/boletas', icon: FileText, label: 'Boletas' },
   { to: '/maestro/calificaciones', icon: ClipboardList, label: 'Calificaciones' },
 ]
@@ -18,6 +21,7 @@ export default function MaestroLayout () {
   // En móvil arranca colapsada (solo iconos) para dejar espacio al contenido.
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 820)
   const { user, logout } = useAuth()
+  const { noLeidas } = useInbox()
   const navigate = useNavigate()
 
   return (
@@ -36,17 +40,25 @@ export default function MaestroLayout () {
         </div>
 
         <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-          {nav.map(item => (
-            <NavLink key={item.to} to={item.to} end={item.end}
-              style={({ isActive }) => ({
-                display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px',
-                borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#fff',
-                background: isActive ? 'rgba(255,255,255,.18)' : 'transparent',
-                justifyContent: open ? 'flex-start' : 'center',
-              })} title={item.label}>
-              <item.icon size={19} style={{ flexShrink: 0 }} />{open && item.label}
-            </NavLink>
-          ))}
+          {nav.map(item => {
+            const badge = item.inbox && noLeidas > 0
+            return (
+              <NavLink key={item.to} to={item.to} end={item.end}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px',
+                  borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#fff',
+                  background: isActive ? 'rgba(255,255,255,.18)' : 'transparent',
+                  justifyContent: open ? 'flex-start' : 'center', position: 'relative',
+                })} title={item.label}>
+                <span style={{ position: 'relative', flexShrink: 0, display: 'grid', placeItems: 'center' }}>
+                  <item.icon size={19} />
+                  {badge && !open && <span style={{ position: 'absolute', top: -4, right: -6, minWidth: 15, height: 15, padding: '0 3px', borderRadius: 99, background: 'var(--accent)', color: '#1C1E2E', fontSize: 10, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{noLeidas}</span>}
+                </span>
+                {open && item.label}
+                {badge && open && <span style={{ marginLeft: 'auto', minWidth: 20, height: 20, padding: '0 6px', borderRadius: 99, background: 'var(--accent)', color: '#1C1E2E', fontSize: 11, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{noLeidas}</span>}
+              </NavLink>
+            )
+          })}
         </nav>
 
         <div style={{ padding: 12, borderTop: '1px solid rgba(255,255,255,.12)' }}>

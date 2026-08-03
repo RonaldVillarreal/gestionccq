@@ -173,6 +173,48 @@ const SCHEMA = {
     ['comentario', 's', 2000, false],
     ['fecha',      's', 32,   false],
   ],
+  // Medallas/sellos que el maestro otorga al alumno.
+  medallas: [
+    ['alumno_id',  's', 64,   false],
+    ['maestro_id', 's', 64,   false],
+    ['tarea_id',   's', 64,   false],
+    ['sello',      's', 32,   false],
+    ['emoji',      's', 16,   false],
+    ['titulo',     's', 128,  false],
+    ['mensaje',    's', 2000, false],
+    ['puntos',     'f', false, 0],
+  ],
+  // Fichas de evaluación del maestro (observación, cotejo, anecdótico).
+  // El contenido variable se guarda como JSON en `datos`.
+  fichas: [
+    ['maestro_id', 's', 64,     false],
+    ['tipo',       's', 32,     false],  // observacion | cotejo | anecdotico
+    ['grado',      's', 64,     false],
+    ['seccion',    's', 32,     false],
+    ['titulo',     's', 255,    false],
+    ['datos',      's', 200000, false],  // JSON con encabezado, columnas y valores
+  ],
+  // Bandeja de entrada: avisos dirigidos a un usuario (por su id de login).
+  notificaciones: [
+    ['para',   's', 64,   false],   // usuario_id destinatario
+    ['de',     's', 64,   false],   // usuario_id emisor
+    ['tipo',   's', 32,   false],   // tarea_nueva | tarea_entregada | medalla
+    ['titulo', 's', 255,  false],
+    ['cuerpo', 's', 2000, false],
+    ['ref_id', 's', 64,   false],
+    ['leido',  'b', false, false],
+  ],
+  // Facturas que emite la administradora (cobranzas).
+  facturas: [
+    ['alumno_id',        's', 64,   false],
+    ['representante_id', 's', 64,   false],
+    ['concepto',         's', 255,  false],
+    ['monto',            'f', false, 0],
+    ['periodo',          's', 16,   false],  // ej: 2026-06
+    ['estado',           's', 32,   false],  // pendiente | enviada | pagada
+    ['fecha_emision',    's', 32,   false],
+    ['fecha_pago',       's', 32,   false],
+  ],
 }
 
 /* Índices recomendados (acelera los filtros del frontend). */
@@ -189,6 +231,10 @@ const INDEXES = {
   tareas:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
   libros:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
   entregas:        [['idx_alumno', 'key', ['alumno_id']], ['idx_tarea', 'key', ['tarea_id']]],
+  facturas:        [['idx_alumno', 'key', ['alumno_id']], ['idx_estado', 'key', ['estado']]],
+  medallas:        [['idx_alumno', 'key', ['alumno_id']]],
+  notificaciones:  [['idx_para', 'key', ['para']]],
+  fichas:          [['idx_maestro', 'key', ['maestro_id']]],
 }
 
 async function createAttribute (col, def) {
@@ -237,6 +283,7 @@ async function main () {
     { nombre: 'Ana Villarreal', usuario: 'anavillarreal', pass: 'maestro123', rol: 'maestro',   email: 'ana@colegio.edu' },
     { nombre: 'Carlos Rivas', usuario: 'crivas',  pass: 'aprobar123', rol: 'aprobador', email: 'carlos@colegio.edu' },
     { nombre: 'Sofía González', usuario: 'sofia', pass: 'alumno123', rol: 'alumno' },
+    { nombre: 'Rosa Márquez', usuario: 'rosa', pass: 'admin123', rol: 'administradora', email: 'administracion@colegio.edu' },
   ]
   // Evita duplicados si vuelves a correr el script.
   let existentes = []

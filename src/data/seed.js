@@ -5,6 +5,7 @@ export const seed = {
     { id: 'u-maestro', nombre: 'Ana Villarreal', usuario: 'anavillarreal', pass: 'maestro123', rol: 'maestro', email: 'ana@colegio.edu', created_at: '2025-01-02' },
     { id: 'u-aprob', nombre: 'Carlos Rivas', usuario: 'crivas', pass: 'aprobar123', rol: 'aprobador', email: 'carlos@colegio.edu', created_at: '2025-01-02' },
     { id: 'u-alumno', nombre: 'Sofía González', usuario: 'sofia', pass: 'alumno123', rol: 'alumno', created_at: '2025-02-05' },
+    { id: 'u-admva', nombre: 'Rosa Márquez', usuario: 'rosa', pass: 'admin123', rol: 'administradora', email: 'administracion@colegio.edu', created_at: '2025-01-03' },
   ],
   representantes: [
     { id: 'r-1', nombre: 'María', apellido: 'González', cedula: 'V-12345678', telefono: '+584141234567', email: 'maria.g@gmail.com', parentesco: 'Madre', created_at: '2025-02-01' },
@@ -57,5 +58,24 @@ export const seed = {
   // Registro de tareas que el alumno marca como hechas (sincroniza su progreso/puntos).
   entregas: [
     { id: 'en-1', alumno_id: 'a-1', tarea_id: 't-3', status: 'entregada', comentario: '', fecha: '2026-06-27', created_at: '2026-06-27' },
+  ],
+  // Medallas/sellos que el maestro otorga al alumno al revisar una tarea.
+  // Suman puntos a su perfil, además de los logros automáticos.
+  medallas: [
+    { id: 'md-1', alumno_id: 'a-1', maestro_id: 'm-1', tarea_id: 't-3', sello: 'excelente', emoji: '🌟', titulo: 'Excelente', mensaje: '¡Tu lámina de las plantas quedó preciosa!', puntos: 20, created_at: '2026-06-28' },
+  ],
+  // Bandeja de entrada: avisos dirigidos a un usuario (por su id de login).
+  notificaciones: [
+    { id: 'nt-1', para: 'u-alumno', de: 'u-maestro', tipo: 'medalla', titulo: '🌟 ¡Ganaste una medalla!', cuerpo: 'La maestra Ana te dio el sello «Excelente» por «Las plantas y sus partes».', ref_id: 'md-1', leido: false, created_at: '2026-06-28' },
+    { id: 'nt-2', para: 'u-alumno', de: 'u-maestro', tipo: 'tarea_nueva', titulo: '📌 Nueva tarea de Matemática', cuerpo: 'Tienes una nueva tarea: «Sumas y restas con llevadas».', ref_id: 't-1', leido: true, created_at: '2026-06-26' },
+    { id: 'nt-3', para: 'u-maestro', de: 'u-alumno', tipo: 'tarea_entregada', titulo: '✅ Tarea completada', cuerpo: 'Sofía González completó «Las plantas y sus partes».', ref_id: 'en-1', leido: false, created_at: '2026-06-27' },
+  ],
+  // Facturas que emite la administradora. Alimentan el estado de morosidad
+  // del alumno y el dashboard financiero del admin.
+  facturas: [
+    { id: 'f-1', alumno_id: 'a-2', representante_id: 'r-1', concepto: 'Mensualidad Junio', monto: 45, periodo: '2026-06', estado: 'pendiente', fecha_emision: '2026-06-01', fecha_pago: '', created_at: '2026-06-01' },
+    { id: 'f-2', alumno_id: 'a-3', representante_id: 'r-2', concepto: 'Mensualidad Junio', monto: 45, periodo: '2026-06', estado: 'enviada', fecha_emision: '2026-06-01', fecha_pago: '', created_at: '2026-06-01' },
+    { id: 'f-3', alumno_id: 'a-3', representante_id: 'r-2', concepto: 'Mensualidad Mayo', monto: 45, periodo: '2026-05', estado: 'pendiente', fecha_emision: '2026-05-01', fecha_pago: '', created_at: '2026-05-01' },
+    { id: 'f-4', alumno_id: 'a-1', representante_id: 'r-1', concepto: 'Mensualidad Junio', monto: 45, periodo: '2026-06', estado: 'pagada', fecha_emision: '2026-06-01', fecha_pago: '2026-06-05', created_at: '2026-06-01' },
   ],
 }

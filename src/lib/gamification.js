@@ -9,10 +9,12 @@
 export const PUNTOS_POR_TAREA = 10
 export const PUNTOS_POR_NIVEL = 50
 
-/* Calcula puntos/nivel/racha a partir de las entregas del alumno. */
-export function calcularProgreso (entregas = []) {
+/* Calcula puntos/nivel/racha a partir de las entregas del alumno y de las
+   medallas que le otorgó el maestro (ambas suman estrellas al perfil). */
+export function calcularProgreso (entregas = [], medallas = []) {
   const hechas = entregas.filter(e => e.status === 'entregada')
-  const puntos = hechas.length * PUNTOS_POR_TAREA
+  const puntosMedallas = medallas.reduce((s, m) => s + (Number(m.puntos) || 0), 0)
+  const puntos = hechas.length * PUNTOS_POR_TAREA + puntosMedallas
   const nivel = Math.floor(puntos / PUNTOS_POR_NIVEL) + 1
   const puntosEnNivel = puntos % PUNTOS_POR_NIVEL
   const faltanParaSubir = PUNTOS_POR_NIVEL - puntosEnNivel
@@ -22,7 +24,7 @@ export function calcularProgreso (entregas = []) {
   const dias = new Set(hechas.map(e => (e.fecha || e.created_at || '').slice(0, 10)).filter(Boolean))
   const racha = dias.size
 
-  return { puntos, nivel, puntosEnNivel, faltanParaSubir, progresoPct, completadas: hechas.length, racha }
+  return { puntos, nivel, puntosEnNivel, faltanParaSubir, progresoPct, completadas: hechas.length, racha, medallas: medallas.length, puntosMedallas }
 }
 
 /* Título amistoso según el nivel. */
@@ -49,8 +51,22 @@ export const LOGROS = [
   { id: 'cinco',    emoji: '🏅', titulo: 'Dedicado',           desc: 'Completa 5 tareas',                 cumple: p => p.completadas >= 5 },
   { id: 'diez',     emoji: '🏆', titulo: 'Imparable',          desc: 'Completa 10 tareas',                cumple: p => p.completadas >= 10 },
   { id: 'racha3',   emoji: '🔥', titulo: 'En racha',           desc: 'Entrega tareas 3 días distintos',   cumple: p => p.racha >= 3 },
+  { id: 'premiado', emoji: '🎖️', titulo: 'Reconocido',         desc: 'Recibe una medalla de tu maestra',  cumple: p => p.medallas >= 1 },
   { id: 'nivel3',   emoji: '🦉', titulo: 'Sabio curioso',      desc: 'Llega al nivel 3',                  cumple: p => p.nivel >= 3 },
 ]
+
+/* Catálogo de sellos que el maestro puede otorgar al revisar una tarea.
+   Cada sello suma sus puntos al perfil del alumno. */
+export const SELLOS = [
+  { key: 'excelente', emoji: '🌟', titulo: 'Excelente',       desc: 'Trabajo sobresaliente',  puntos: 20 },
+  { key: 'estrella',  emoji: '⭐', titulo: 'Estrella de oro',  desc: '¡Lo máximo!',            puntos: 25 },
+  { key: 'muybien',   emoji: '👏', titulo: '¡Muy bien!',       desc: 'Buen trabajo',           puntos: 10 },
+  { key: 'esfuerzo',  emoji: '💪', titulo: 'Gran esfuerzo',    desc: 'Se nota tu dedicación',  puntos: 10 },
+  { key: 'creativo',  emoji: '🎨', titulo: 'Creativo',         desc: 'Mucha creatividad',      puntos: 15 },
+  { key: 'puntual',   emoji: '⏱️', titulo: 'Puntual',          desc: 'Entregaste a tiempo',    puntos: 5 },
+]
+
+export const selloDe = (key) => SELLOS.find(s => s.key === key) || null
 
 export function logrosDesbloqueados (progreso) {
   return LOGROS.map(l => ({ ...l, listo: l.cumple(progreso) }))

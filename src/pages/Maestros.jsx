@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Upload, Trash2, UserCog, Download, Mail, Phone, KeyRound, GraduationCap } from 'lucide-react'
+import { Plus, Upload, Trash2, UserCog, Download, Mail, Phone, KeyRound, GraduationCap, Pencil } from 'lucide-react'
 import { Modal, Empty, WhatsAppButton } from '../components/UI'
 import { useTable } from '../lib/useTable'
 import { readExcel, downloadTemplate } from '../lib/excel'
@@ -11,36 +11,61 @@ export default function Maestros () {
   const usuarios = useTable('usuarios')
   const personal = useTable('personal')
   const [modal, setModal] = useState(false)
+  const [editId, setEditId] = useState(null)
   const [form, setForm] = useState(empty)
   const [importing, setImporting] = useState(false)
 
   function set (k, v) { setForm(f => ({ ...f, [k]: v })) }
 
+  // Abre el modal en modo edición con los datos del maestro (y su login si tiene).
+  function editar (m) {
+    const u = usuarios.rows.find(x => x.id === m.usuario_id)
+    setEditId(m.id)
+    setForm({
+      nombre: m.nombre || '', apellido: m.apellido || '', cedula: m.cedula || '',
+      telefono: m.telefono || '', email: m.email || '', materia: m.materia || '',
+      nivel: m.nivel || 'Primaria', grado: m.grado || '', seccion: m.seccion || '',
+      usuario: u?.usuario || '', pass: '',
+    })
+    setModal(true)
+  }
+
   async function guardar () {
     if (!form.nombre || !form.telefono) return alert('Nombre y teléfono son obligatorios.')
-    let usuario_id = null
+
+    // Vinculación / creación del acceso al portal (opcional).
+    let usuario_id = editId ? (maestros.rows.find(m => m.id === editId)?.usuario_id || null) : null
     if (form.usuario) {
-      // Si ya existe un usuario con ese login, lo reutilizamos (lo vinculamos
-      // a este maestro). Si no, y hay contraseña, creamos uno nuevo.
       const existente = usuarios.rows.find(u => u.usuario?.toLowerCase() === form.usuario.trim().toLowerCase())
       if (existente) {
         usuario_id = existente.id
+        if (form.pass && form.pass !== existente.pass) await usuarios.update(existente.id, { pass: form.pass })
       } else if (form.pass) {
-        const u = await usuarios.insert({ nombre: `${form.nombre} ${form.apellido}`, usuario: form.usuario, pass: form.pass, rol: 'maestro', email: form.email })
+        const u = await usuarios.insert({ nombre: `${form.nombre} ${form.apellido}`, usuario: form.usuario.trim(), pass: form.pass, rol: 'maestro', email: form.email })
         usuario_id = u.id
       }
     }
-    const m = await maestros.insert({
+
+    const datos = {
       nombre: form.nombre, apellido: form.apellido, cedula: form.cedula, telefono: form.telefono,
       email: form.email, materia: form.materia, nivel: form.nivel,
       grado: form.grado, seccion: form.seccion, usuario_id,
-    })
-    // El maestro también es Personal docente.
-    await personal.insert({ nombre: form.nombre, apellido: form.apellido, cargo: 'Maestro', tipo: 'Docente', telefono: form.telefono, email: form.email, ref_id: m.id })
+    }
+
+    if (editId) {
+      await maestros.update(editId, datos)
+      // Mantiene sincronizado el registro de Personal docente vinculado.
+      const p = personal.rows.find(x => x.ref_id === editId)
+      if (p) await personal.update(p.id, { nombre: form.nombre, apellido: form.apellido, telefono: form.telefono, email: form.email })
+    } else {
+      const m = await maestros.insert(datos)
+      // El maestro también es Personal docente.
+      await personal.insert({ nombre: form.nombre, apellido: form.apellido, cargo: 'Maestro', tipo: 'Docente', telefono: form.telefono, email: form.email, ref_id: m.id })
+    }
     cerrar()
   }
 
-  function cerrar () { setModal(false); setForm(empty) }
+  function cerrar () { setModal(false); setEditId(null); setForm(empty) }
 
   async function importar (e) {
     const file = e.target.files?.[0]; if (!file) return
@@ -88,7 +113,11 @@ export default function Maestros () {
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 16 }}>{m.nombre} {m.apellido}</div>
-                  <div style={{ color: 'var(--text-soft)', fontSize: 13 }}>{m.materia || 'Sin materia'} · {m.nivel}</div>
+                  {/* En primaria el maestro da todas las materias, así que solo mostramos
+                      el nivel. En secundaria sí puede tener una materia concreta. */}
+                  <div style={{ color: 'var(--text-soft)', fontSize: 13 }}>
+                    {m.nivel === 'Secundaria' && m.materia ? `${m.materia} · Secundaria` : m.nivel}
+                  </div>
                 </div>
               </div>
 
@@ -106,7 +135,10 @@ export default function Maestros () {
 
               <div style={{ display: 'flex', gap: 8, marginTop: 'auto' }}>
                 <WhatsAppButton phone={m.telefono} message={`Hola ${m.nombre}, le escribimos desde el colegio.`} />
-                <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => confirm('¿Eliminar maestro?') && maestros.remove(m.id)}>
+                <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => editar(m)} title="Editar maestro">
+                  <Pencil size={15} />
+                </button>
+                <button className="btn btn-ghost btn-sm" onClick={() => confirm('¿Eliminar maestro?') && maestros.remove(m.id)} title="Eliminar maestro">
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -116,10 +148,10 @@ export default function Maestros () {
       ) : <div className="card"><Empty icon={UserCog} title="Sin maestros" hint="Agrega el primer docente del colegio." /></div>}
 
       {modal && (
-        <Modal title="Nuevo maestro" onClose={cerrar} wide
+        <Modal title={editId ? 'Editar maestro' : 'Nuevo maestro'} onClose={cerrar} wide
           footer={<>
             <button className="btn btn-ghost" onClick={cerrar}>Cancelar</button>
-            <button className="btn btn-primary" onClick={guardar}>Guardar maestro</button>
+            <button className="btn btn-primary" onClick={guardar}>{editId ? 'Guardar cambios' : 'Guardar maestro'}</button>
           </>}>
           <div className="grid-form">
             <div className="field"><label>Nombre *</label><input className="input" value={form.nombre} onChange={e => set('nombre', e.target.value)} /></div>
@@ -143,7 +175,7 @@ export default function Maestros () {
             </p>
             <div className="grid-form">
               <div className="field"><label>Usuario</label><input className="input" value={form.usuario} onChange={e => set('usuario', e.target.value)} placeholder="Ej: anavillarreal" /></div>
-              <div className="field"><label>Contraseña</label><input className="input" value={form.pass} onChange={e => set('pass', e.target.value)} /></div>
+              <div className="field"><label>Contraseña</label><input className="input" value={form.pass} onChange={e => set('pass', e.target.value)} placeholder={editId ? 'Dejar en blanco para conservar' : ''} /></div>
             </div>
           </div>
         </Modal>

@@ -18,7 +18,7 @@ export default function Login () {
     const res = await login(usuario, pass)
     setLoading(false)
     if (!res.ok) { setError(res.error); return }
-    const dest = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno' }[res.user.rol] || '/admin'
+    const dest = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno', administradora: '/administracion' }[res.user.rol] || '/admin'
     navigate(dest)
   }
 
