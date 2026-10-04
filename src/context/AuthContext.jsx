@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { db } from '../lib/db'
+import { useInstitucion } from './InstitucionContext'
+import { rutaLogin } from '../lib/instituciones'
 
 /* Auth simple por usuario/clave contra la tabla `usuarios`.
    Roles: admin, maestro, aprobador.
@@ -10,6 +12,7 @@ import { db } from '../lib/db'
 const AuthCtx = createContext()
 
 export function AuthProvider ({ children }) {
+  const { slug, info } = useInstitucion()
   const [user, setUser] = useState(() => {
     const raw = localStorage.getItem('session')
     return raw ? JSON.parse(raw) : null
@@ -21,6 +24,8 @@ export function AuthProvider ({ children }) {
   }, [user])
 
   async function login (usuario, pass) {
+    if (!info) return { ok: false, error: 'Esta institución no existe.' }
+    if (info.estado === 'inactivo') return { ok: false, error: 'Este sistema está desactivado. Contacta al administrador.' }
     let usuarios
     try {
       usuarios = await db.list('usuarios')
@@ -36,12 +41,13 @@ export function AuthProvider ({ children }) {
       x => x.usuario?.trim().toLowerCase() === u && (x.pass ?? '').trim() === p
     )
     if (!found) return { ok: false, error: 'Usuario o clave incorrectos' }
-    const safe = { id: found.id, nombre: found.nombre, usuario: found.usuario, rol: found.rol }
+    const safe = { id: found.id, nombre: found.nombre, usuario: found.usuario, rol: found.rol, institucion: slug }
     setUser(safe)
     return { ok: true, user: safe }
   }
 
-  const logout = () => setUser(null)
+  /* Cierra la sesión y devuelve la ruta del login de su institución. */
+  const logout = () => { setUser(null); return rutaLogin(slug) }
 
   return (
     <AuthCtx.Provider value={{ user, login, logout }}>

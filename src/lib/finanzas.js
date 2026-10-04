@@ -88,10 +88,10 @@ export function deudaDeAlumno (facturas, alumnoId) {
 }
 
 /** Mensaje de cobranza listo para WhatsApp o correo. */
-export function mensajeCobranza ({ repNombre, alumnoNombre, concepto, monto: m, periodo }) {
+export function mensajeCobranza ({ repNombre, alumnoNombre, concepto, monto: m, periodo, institucion = 'Colegio Cardenal Quintero' }) {
   const saludo = repNombre ? `Estimado/a ${repNombre}` : 'Estimado/a representante'
   return `${saludo}, le recordamos el pago pendiente de ${alumnoNombre}` +
     `${concepto ? ` por "${concepto}"` : ''}${periodo ? ` (${etiquetaPeriodo(periodo)})` : ''}` +
     ` por un monto de $${m}. Puede acercarse a administración o responder este mensaje. ¡Gracias!` +
-    `\n\nColegio Cardenal Quintero`
+    `\n\n${institucion}`
 }

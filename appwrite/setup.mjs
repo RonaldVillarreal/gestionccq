@@ -55,6 +55,16 @@ const ANY = [
   Permission.delete(Role.any()),
 ]
 
+/* `instituciones`: la lee cualquiera (el login de cada colegio la necesita),
+   pero solo la modifica una cuenta de Appwrite Auth con la etiqueta
+   "superadmin" (la del panel /superadmin).                               */
+const SOLO_SUPERADMIN = [
+  Permission.read(Role.any()),
+  Permission.create(Role.label('superadmin')),
+  Permission.update(Role.label('superadmin')),
+  Permission.delete(Role.label('superadmin')),
+]
+
 /* Helper: ignora el error "ya existe" (409) y sigue. */
 const ok = async (label, fn) => {
   try { await fn(); console.log('  ✓', label) }
@@ -215,6 +225,27 @@ const SCHEMA = {
     ['fecha_emision',    's', 32,   false],
     ['fecha_pago',       's', 32,   false],
   ],
+  // Sistemas de gestión (una por colegio/escuela/universidad). Global:
+  // la administra el Super Admin. Su `slug` es el `institucion_id` de los datos.
+  instituciones: [
+    ['nombre',         's', 255,    false],
+    ['slug',           's', 64,     false],
+    ['tipo',           's', 32,     false],  // colegio | escuela | universidad
+    ['estado',         's', 32,     false],  // activo | inactivo
+    ['logo',           's', 400000, false],  // data-URL (imagen reducida en el navegador)
+    ['color_primario', 's', 16,     false],
+    ['color_acento',   's', 16,     false],
+    ['ciudad',         's', 128,    false],
+    ['direccion',      's', 255,    false],
+    ['telefono',       's', 64,     false],
+    ['email',          's', 255,    false],
+    ['responsable',    's', 255,    false],
+  ],
+}
+
+// Todas las colecciones de datos llevan la institución a la que pertenecen.
+for (const col of Object.keys(SCHEMA)) {
+  if (col !== 'instituciones') SCHEMA[col].push(['institucion_id', 's', 64, false])
 }
 
 /* Índices recomendados (acelera los filtros del frontend). */
@@ -226,7 +257,9 @@ const INDEXES = {
     ['idx_aprobador', 'key', ['aprobador_id']],
     ['idx_status',    'key', ['status']],
   ],
-  usuarios:        [['idx_usuario', 'unique', ['usuario']]],
+  // El mismo nombre de usuario puede existir en instituciones distintas.
+  usuarios:        [['idx_inst_usuario', 'unique', ['institucion_id', 'usuario']]],
+  instituciones:   [['idx_slug', 'unique', ['slug']]],
   items_alumno:    [['idx_alumno', 'key', ['alumno_id']]],
   tareas:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
   libros:          [['idx_grado', 'key', ['grado']], ['idx_maestro', 'key', ['maestro_id']]],
@@ -264,12 +297,20 @@ async function main () {
 
   for (const [col, attrs] of Object.entries(SCHEMA)) {
     console.log(`\nColección "${col}":`)
-    await ok('colección', () => databases.createCollection(DB_ID, col, col, ANY))
+    const perms = col === 'instituciones' ? SOLO_SUPERADMIN : ANY
+    await ok('colección', () => databases.createCollection(DB_ID, col, col, perms))
+    // Si ya existía, igual le aplica los permisos vigentes.
+    if (col === 'instituciones') await ok('permisos', () => databases.updateCollection(DB_ID, col, col, perms))
     for (const def of attrs) await ok(`atributo ${def[0]}`, () => createAttribute(col, def))
   }
 
   console.log('\nEsperando a que los atributos estén listos…')
   for (const col of Object.keys(SCHEMA)) await waitAttributes(col)
+
+  // Migración: el índice único viejo (solo `usuario`) impide repetir nombres
+  // de usuario entre instituciones. Se reemplaza por idx_inst_usuario.
+  try { await databases.deleteIndex(DB_ID, 'usuarios', 'idx_usuario'); console.log('\n  ✓ índice viejo idx_usuario eliminado') }
+  catch { /* no existía */ }
 
   for (const [col, list] of Object.entries(INDEXES)) {
     console.log(`\nÍndices "${col}":`)

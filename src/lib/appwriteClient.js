@@ -1,4 +1,4 @@
-import { Client, Databases } from 'appwrite'
+import { Client, Databases, Account } from 'appwrite'
 
 const endpoint  = import.meta.env.VITE_APPWRITE_ENDPOINT
 const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID
@@ -17,3 +17,6 @@ const client = hasAppwrite
   : null
 
 export const databases = hasAppwrite ? new Databases(client) : null
+
+// Solo lo usa el Super Admin (login con Appwrite Auth).
+export const account = hasAppwrite ? new Account(client) : null

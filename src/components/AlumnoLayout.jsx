@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Home, BookOpenCheck, Library, Trophy, Inbox, LogOut, Menu, ChevronLeft, Star } from 'lucide-react'
-import { ThemeToggle } from './UI'
+import { ThemeToggle, LogoImg, useNombreInstitucion } from './UI'
 import { useAlumno } from '../lib/useAlumno'
 import { useAuth } from '../context/AuthContext'
 import { useInbox } from '../lib/inbox'
@@ -19,6 +19,7 @@ export default function AlumnoLayout () {
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 820)
   const { user, alumno, progreso } = useAlumno()
   const { logout } = useAuth()
+  const nombreInst = useNombreInstitucion()
   const { noLeidas } = useInbox()
   const navigate = useNavigate()
   const nombre = (alumno?.nombre || user?.nombre || '').split(' ')[0]
@@ -33,10 +34,10 @@ export default function AlumnoLayout () {
         position: 'sticky', top: 0, height: '100vh', flexShrink: 0,
       }}>
         <div style={{ padding: open ? '20px 16px' : '20px 12px', borderBottom: '1px solid rgba(255,255,255,.14)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/logo.png" width={34} height={34} alt="Logo" />
+          <LogoImg />
           {open && <div style={{ lineHeight: 1.1 }}>
             <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 15 }}>Mi Aula 🎒</div>
-            <div style={{ fontSize: 11, opacity: .75 }}>Colegio Cardenal Quintero</div>
+            <div style={{ fontSize: 11, opacity: .75 }}>{nombreInst}</div>
           </div>}
         </div>
 
@@ -82,7 +83,7 @@ export default function AlumnoLayout () {
         </nav>
 
         <div style={{ padding: 12, borderTop: '1px solid rgba(255,255,255,.14)' }}>
-          <button onClick={() => { logout(); navigate('/') }}
+          <button onClick={() => { navigate(logout()) }}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 10, color: '#fff', fontWeight: 600, fontSize: 14, background: 'rgba(255,255,255,.1)', justifyContent: open ? 'flex-start' : 'center' }}>
             <LogOut size={18} />{open && 'Salir'}
           </button>

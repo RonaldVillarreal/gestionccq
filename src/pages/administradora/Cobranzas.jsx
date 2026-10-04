@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 import { AlertTriangle, MessageCircle, Mail, CheckCircle2, Receipt } from 'lucide-react'
-import { Empty } from '../../components/UI'
+import { Empty, useNombreInstitucion } from '../../components/UI'
 import { useTable } from '../../lib/useTable'
 import { esDeuda, mensajeCobranza, etiquetaPeriodo, deudaDeAlumno } from '../../lib/finanzas'
 
 /* Cobranzas: agrupa la deuda por alumno para gestionarla en un solo lugar.
    Enviar recordatorios (WhatsApp/correo) y registrar el pago. */
 export default function Cobranzas () {
+  const nombreInst = useNombreInstitucion()
   const facturas = useTable('facturas')
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
@@ -39,7 +40,7 @@ export default function Cobranzas () {
     return mensajeCobranza({
       repNombre: g.r ? `${g.r.nombre} ${g.r.apellido}` : '',
       alumnoNombre: g.a ? `${g.a.nombre} ${g.a.apellido}` : 'su representado',
-      concepto: conceptos, monto: g.total, periodo: '',
+      concepto: conceptos, monto: g.total, periodo: '', institucion: nombreInst,
     })
   }
 
@@ -50,7 +51,7 @@ export default function Cobranzas () {
   }
   function correo (g) {
     if (!g.r?.email) return alert('El representante no tiene correo cargado.')
-    window.open(`mailto:${g.r.email}?subject=${encodeURIComponent('Recordatorio de pago · Colegio Cardenal Quintero')}&body=${encodeURIComponent(mensajeGrupo(g))}`)
+    window.open(`mailto:${g.r.email}?subject=${encodeURIComponent('Recordatorio de pago · ' + nombreInst)}&body=${encodeURIComponent(mensajeGrupo(g))}`)
     marcarEnviadas(g)
   }
   async function marcarEnviadas (g) {

@@ -282,3 +282,26 @@ input, select, textarea { font-family: inherit; }
   100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .confetti-layer { display: none; } }
+
+/* ---------- Super Admin · sistemas de gestión ---------- */
+.sa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+@media (max-width: 400px) { .sa-grid { grid-template-columns: 1fr; } }
+.sa-card { display: flex; flex-direction: column; overflow: hidden; transition: box-shadow .15s; }
+.sa-card:hover { box-shadow: var(--shadow-lg); }
+.sa-datos { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13px; }
+.sa-datos dt { color: var(--text-faint); }
+.sa-datos dd { color: var(--text-soft); min-width: 0; overflow-wrap: anywhere; }
+.sa-acciones { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.sa-peligro { color: var(--danger); margin-left: auto; }
+.sa-link { font-size: 12px; font-weight: 600; color: var(--text-soft); text-decoration: underline; flex-shrink: 0; }
+.sa-nuevo { min-height: 260px; border: 2px dashed var(--border); border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  color: var(--text-soft); background: transparent; transition: border-color .15s, color .15s; }
+.sa-nuevo:hover { border-color: var(--primary); color: var(--primary); }
+.sa-paleta { display: inline-flex; align-items: center; gap: 0; padding: 4px 10px 4px 4px; border-radius: 99px;
+  border: 1px solid var(--border); background: var(--surface); outline-offset: 2px; }
+.sa-paleta span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--surface); }
+.sa-paleta span + span { margin-left: -6px; }
+.sa-paleta em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-left: 6px; }
+.sa-color { width: 44px; height: 40px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); cursor: pointer; flex-shrink: 0; }
+.modal-foot { position: sticky; bottom: 0; background: var(--surface); flex-wrap: wrap; align-items: center; }

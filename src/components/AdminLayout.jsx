@@ -4,7 +4,7 @@ import {
   LayoutDashboard, GraduationCap, Users, UserCog, Briefcase,
   Receipt, LogOut, Menu, ChevronLeft
 } from 'lucide-react'
-import { Logo, ThemeToggle } from '../components/UI'
+import { Logo, ThemeToggle, LogoImg } from '../components/UI'
 import { useAuth } from '../context/AuthContext'
 import { db } from '../lib/db'
 
@@ -32,7 +32,7 @@ export default function AdminLayout () {
         height: '100vh', flexShrink: 0
       }}>
         <div style={{ padding: open ? '20px 18px' : '20px 14px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {open ? <Logo /> : <img src="/logo.png" width={34} height={34} alt="Logo" />}
+          {open ? <Logo /> : <LogoImg />}
         </div>
 
         <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
@@ -56,7 +56,7 @@ export default function AdminLayout () {
 
         <div style={{ padding: 12, borderTop: '1px solid var(--border)' }}>
           <button className="btn btn-ghost" style={{ width: '100%', justifyContent: open ? 'flex-start' : 'center' }}
-            onClick={() => { logout(); navigate('/') }}>
+            onClick={() => { navigate(logout()) }}>
             <LogOut size={18} />{open && 'Cerrar sesión'}
           </button>
         </div>

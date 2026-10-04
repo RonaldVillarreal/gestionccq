@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Receipt, FileText, GraduationCap, Users, LogOut, Menu, ChevronLeft } from 'lucide-react'
-import { ThemeToggle } from './UI'
+import { ThemeToggle, LogoImg, useNombreInstitucion } from './UI'
 import { useAuth } from '../context/AuthContext'
 
 const nav = [
@@ -15,6 +15,7 @@ const nav = [
 export default function AdministradoraLayout () {
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 820)
   const { user, logout } = useAuth()
+  const nombreInst = useNombreInstitucion()
   const navigate = useNavigate()
 
   return (
@@ -25,10 +26,10 @@ export default function AdministradoraLayout () {
         position: 'sticky', top: 0, height: '100vh', flexShrink: 0,
       }}>
         <div style={{ padding: open ? '20px 16px' : '20px 12px', borderBottom: '1px solid rgba(255,255,255,.12)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/logo.png" width={34} height={34} alt="Logo" />
+          <LogoImg />
           {open && <div style={{ lineHeight: 1.1 }}>
             <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 15 }}>Administración</div>
-            <div style={{ fontSize: 11, opacity: .7 }}>Colegio Cardenal Quintero</div>
+            <div style={{ fontSize: 11, opacity: .7 }}>{nombreInst}</div>
           </div>}
         </div>
 
@@ -47,7 +48,7 @@ export default function AdministradoraLayout () {
         </nav>
 
         <div style={{ padding: 12, borderTop: '1px solid rgba(255,255,255,.12)' }}>
-          <button onClick={() => { logout(); navigate('/') }}
+          <button onClick={() => { navigate(logout()) }}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 10, color: '#fff', fontWeight: 600, fontSize: 14, background: 'rgba(255,255,255,.08)', justifyContent: open ? 'flex-start' : 'center' }}>
             <LogOut size={18} />{open && 'Salir'}
           </button>

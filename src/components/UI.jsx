@@ -1,14 +1,26 @@
 import { X, MessageCircle, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { useInstitucion } from '../context/InstitucionContext'
+
+/* Logo de la institución activa (o el del colegio principal). */
+export function LogoImg ({ size = 34 }) {
+  const { info } = useInstitucion()
+  return <img src={info?.logo || '/logo.png'} width={size} height={size} alt="Logo" style={{ objectFit: 'contain', flexShrink: 0 }} />
+}
+
+export function useNombreInstitucion () {
+  return useInstitucion().info?.nombre || 'Sistema de Gestión'
+}
 
 export function Logo ({ size = 32, showName = true }) {
+  const nombre = useNombreInstitucion()
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <img src="/logo.png" width={size} height={size} alt="Logo del colegio" />
+      <LogoImg size={size} />
       {showName && (
         <div style={{ lineHeight: 1.1 }}>
           <div style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>
-            Colegio Cardenal Quintero
+            {nombre}
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '.04em' }}>
             SISTEMA DE GESTIÓN

@@ -1,5 +1,9 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
+import { useInstitucion } from './context/InstitucionContext'
+import { DEFAULT_TENANT } from './lib/db'
+import { rutaLogin } from './lib/instituciones'
 
 import Login from './pages/Login'
 
@@ -36,6 +40,10 @@ import Facturacion from './pages/administradora/Facturacion'
 
 import Aprobador from './pages/Aprobador'
 
+import { SuperAdminProvider, useSuperAdmin } from './context/SuperAdminContext'
+import SuperLogin from './pages/superadmin/SuperLogin'
+import SuperPanel from './pages/superadmin/SuperPanel'
+
 /* Ruta a la que pertenece cada rol */
 const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', alumno: '/alumno', administradora: '/administracion' }
 
@@ -43,22 +51,64 @@ const HOME = { admin: '/admin', maestro: '/maestro', aprobador: '/aprobador', al
    Si el rol no coincide, redirige al home del rol del usuario. */
 function Protected ({ rol, children }) {
   const { user } = useAuth()
+  const { slug, info } = useInstitucion()
   const location = useLocation()
-  if (!user) return <Navigate to="/" replace state={{ from: location }} />
+  if (!user) return <Navigate to={rutaLogin(slug)} replace state={{ from: location }} />
+  // Si el Super Admin desactiva el sistema, se bloquea también a quien ya tenía sesión.
+  if (info?.estado === 'inactivo') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, textAlign: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: 24 }}>Sistema desactivado</h1>
+          <p style={{ color: 'var(--text-soft)', marginTop: 8 }}>Contacta al administrador de la plataforma.</p>
+        </div>
+      </div>
+    )
+  }
   if (rol && user.rol !== rol) return <Navigate to={HOME[user.rol] || '/'} replace />
   return children
 }
 
-export default function App () {
-  const { user } = useAuth()
+/* Login de una institución: "/" es la principal, "/i/:slug" las demás.
+   Si ya hay sesión en esa misma institución, manda al home del rol.    */
+function LoginRoute () {
+  const { user, logout } = useAuth()
+  const { slug, setSlug } = useInstitucion()
+  const destino = useParams().slug?.toLowerCase() || DEFAULT_TENANT
+  const otraInstitucion = Boolean(user) && (user.institucion || DEFAULT_TENANT) !== destino
 
+  useEffect(() => {
+    if (otraInstitucion) logout()
+    if (slug !== destino) setSlug(destino)
+  }, [destino, otraInstitucion]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (slug !== destino || otraInstitucion) return null
+  if (user) return <Navigate to={HOME[user.rol] || '/'} replace />
+  return <Login />
+}
+
+function SuperProtected ({ children }) {
+  const { activo, cargando } = useSuperAdmin()
+  if (cargando) return null
+  return activo ? children : <Navigate to="/superadmin" replace />
+}
+
+export default function App () {
   return (
     <Routes>
-      {/* Login: si ya hay sesión, manda al home del rol */}
-      <Route
-        path="/"
-        element={user ? <Navigate to={HOME[user.rol] || '/'} replace /> : <Login />}
-      />
+      <Route path="/" element={<LoginRoute />} />
+      <Route path="/i/:slug" element={<LoginRoute />} />
+
+      {/* Super Admin: gestiona todos los sistemas (instituciones) */}
+      <Route path="/superadmin/*" element={
+        <SuperAdminProvider>
+          <Routes>
+            <Route index element={<SuperLogin />} />
+            <Route path="panel" element={<SuperProtected><SuperPanel /></SuperProtected>} />
+            <Route path="*" element={<Navigate to="/superadmin" replace />} />
+          </Routes>
+        </SuperAdminProvider>
+      } />
 
       {/* Panel administrativo */}
       <Route

@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Logo, ThemeToggle } from '../components/UI'
 import { useAuth } from '../context/AuthContext'
+import { useInstitucion } from '../context/InstitucionContext'
 import { LogIn } from 'lucide-react'
 
 export default function Login () {
   const { login } = useAuth()
+  const { info, cargando } = useInstitucion()
   const navigate = useNavigate()
   const [usuario, setUsuario] = useState('')
   const [pass, setPass] = useState('')
@@ -22,6 +24,18 @@ export default function Login () {
     navigate(dest)
   }
 
+  if (cargando) return null
+  if (!info) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, textAlign: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: 24 }}>Sistema no encontrado</h1>
+          <p style={{ color: 'var(--text-soft)', marginTop: 8 }}>Revisa la dirección que te compartieron.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr', placeItems: 'center', position: 'relative', overflow: 'hidden' }}>
       {/* fondo decorativo */}
@@ -34,7 +48,7 @@ export default function Login () {
         <form onSubmit={submit} className="card card-pad" style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: 30 }}>
           <div>
             <h1 style={{ fontSize: 24 }}>Bienvenido</h1>
-            <p style={{ color: 'var(--text-soft)', fontSize: 14, marginTop: 4 }}>Ingresa con tus credenciales del colegio.</p>
+            <p style={{ color: 'var(--text-soft)', fontSize: 14, marginTop: 4 }}>Ingresa con tus credenciales de {info.nombre}.</p>
           </div>
 
           <div className="field">

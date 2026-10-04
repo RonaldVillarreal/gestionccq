@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Plus, Trash2, FileText, Send, CheckCircle2, MessageCircle, Mail, Search } from 'lucide-react'
-import { Modal, Empty } from '../../components/UI'
+import { Modal, Empty, useNombreInstitucion } from '../../components/UI'
 import { useTable } from '../../lib/useTable'
 import { ESTADOS, esDeuda, deudaDeAlumno, mensajeCobranza, etiquetaPeriodo } from '../../lib/finanzas'
 
@@ -25,6 +25,7 @@ function SeleccionAlumno ({ a, r, deuda, onCambiar }) {
 }
 
 export default function Facturacion () {
+  const nombreInst = useNombreInstitucion()
   const facturas = useTable('facturas')
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
@@ -100,7 +101,7 @@ export default function Facturacion () {
     const r = rep(f.representante_id) || (alumno(f.alumno_id) ? rep(alumno(f.alumno_id).representante_id) : null)
     const msg = mensajeCobranza({
       repNombre: r ? `${r.nombre} ${r.apellido}` : '', alumnoNombre: nombreAlumno(f.alumno_id),
-      concepto: f.concepto, monto: f.monto, periodo: f.periodo,
+      concepto: f.concepto, monto: f.monto, periodo: f.periodo, institucion: nombreInst,
     })
     return { r, msg }
   }
@@ -114,7 +115,7 @@ export default function Facturacion () {
   async function enviarMail (f) {
     const { r, msg } = contactos(f)
     if (!r?.email) return alert('El representante no tiene correo cargado.')
-    window.open(`mailto:${r.email}?subject=${encodeURIComponent('Recordatorio de pago · Colegio Cardenal Quintero')}&body=${encodeURIComponent(msg)}`)
+    window.open(`mailto:${r.email}?subject=${encodeURIComponent('Recordatorio de pago · ' + nombreInst)}&body=${encodeURIComponent(msg)}`)
     if (f.estado === 'pendiente') await cambiarEstado(f, 'enviada')
   }
 

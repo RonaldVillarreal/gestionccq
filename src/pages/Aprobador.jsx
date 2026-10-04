@@ -78,7 +78,7 @@ export default function Aprobador () {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <ThemeToggle />
           <span style={{ fontSize: 13, fontWeight: 600 }}>{user?.nombre} · Aprobador</span>
-          <button className="btn btn-ghost btn-sm" onClick={() => { logout(); navigate('/') }}><LogOut size={16} /></button>
+          <button className="btn btn-ghost btn-sm" onClick={() => { navigate(logout()) }}><LogOut size={16} /></button>
         </div>
       </header>
 
