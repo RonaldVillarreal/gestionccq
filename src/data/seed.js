@@ -6,6 +6,8 @@ export const seed = {
     { id: 'u-aprob', nombre: 'Carlos Rivas', usuario: 'crivas', pass: 'aprobar123', rol: 'aprobador', email: 'carlos@colegio.edu', created_at: '2025-01-02' },
     { id: 'u-alumno', nombre: 'Sofía González', usuario: 'sofia', pass: 'alumno123', rol: 'alumno', created_at: '2025-02-05' },
     { id: 'u-admva', nombre: 'Rosa Márquez', usuario: 'rosa', pass: 'admin123', rol: 'administradora', email: 'administracion@colegio.edu', created_at: '2025-01-03' },
+    { id: 'u-alumno2', nombre: 'Mateo González', usuario: 'mateo', pass: 'alumno123', rol: 'alumno', created_at: '2025-02-05' },
+    { id: 'u-mant', nombre: 'Jorge Mendoza', usuario: 'jmendoza', pass: 'limpieza123', rol: 'mantenimiento', created_at: '2025-01-04' },
   ],
   representantes: [
     { id: 'r-1', nombre: 'María', apellido: 'González', cedula: 'V-12345678', telefono: '+584141234567', email: 'maria.g@gmail.com', parentesco: 'Madre', created_at: '2025-02-01' },
@@ -13,7 +15,7 @@ export const seed = {
   ],
   alumnos: [
     { id: 'a-1', nombre: 'Sofía', apellido: 'González', cedula: 'V-31000111', nivel: 'Primaria', grado: '3er Grado', seccion: 'A', representante_id: 'r-1', usuario_id: 'u-alumno', moroso: false, monto_deuda: 0, created_at: '2025-02-05' },
-    { id: 'a-2', nombre: 'Mateo', apellido: 'González', cedula: 'V-31000222', nivel: 'Secundaria', grado: '1er Año', seccion: 'B', representante_id: 'r-1', moroso: true, monto_deuda: 45, created_at: '2025-02-05' },
+    { id: 'a-2', nombre: 'Mateo', apellido: 'González', cedula: 'V-31000222', nivel: 'Secundaria', grado: '1er Año', seccion: 'B', representante_id: 'r-1', usuario_id: 'u-alumno2', moroso: true, monto_deuda: 45, created_at: '2025-02-05' },
     { id: 'a-3', nombre: 'Valentina', apellido: 'Pérez', cedula: 'V-31000333', nivel: 'Primaria', grado: '5to Grado', seccion: 'A', representante_id: 'r-2', moroso: true, monto_deuda: 90, created_at: '2025-02-06' },
     { id: 'a-4', nombre: 'Diego', apellido: 'Pérez', cedula: 'V-31000444', nivel: 'Primaria', grado: '3er Grado', seccion: 'A', representante_id: 'r-2', moroso: false, monto_deuda: 0, created_at: '2025-02-07' },
     { id: 'a-5', nombre: 'Camila', apellido: 'Rojas', cedula: 'V-31000555', nivel: 'Primaria', grado: '3er Grado', seccion: 'A', representante_id: '', moroso: false, monto_deuda: 0, created_at: '2025-02-08' },
@@ -21,17 +23,25 @@ export const seed = {
   maestros: [
     { id: 'm-1', nombre: 'Ana', apellido: 'Villarreal', cedula: 'V-14000111', telefono: '+584141112233', email: 'ana@colegio.edu', materia: 'Matemática', nivel: 'Primaria', grado: '3er Grado', seccion: 'A', usuario_id: 'u-maestro', created_at: '2025-01-10' },
     { id: 'm-2', nombre: 'Pedro', apellido: 'Salazar', cedula: 'V-15000222', telefono: '+584244455667', email: 'pedro@colegio.edu', materia: 'Lengua', nivel: 'Primaria', grado: '', seccion: '', created_at: '2025-01-12' },
+    { id: 'm-3', nombre: 'Gabriela', apellido: 'Ortiz', cedula: 'V-16000333', telefono: '', email: 'gortiz@colegio.edu', materia: 'Matemática', nivel: 'Secundaria', grado: '1er Año', seccion: 'B', created_at: '2025-01-12' },
+    { id: 'm-4', nombre: 'Luis', apellido: 'Herrera', cedula: 'V-17000444', telefono: '', email: 'lherrera@colegio.edu', materia: 'Biología', nivel: 'Secundaria', grado: '1er Año', seccion: 'B', created_at: '2025-01-12' },
   ],
   personal: [
     { id: 'p-1', nombre: 'Laura', apellido: 'Méndez', cargo: 'Maestro', tipo: 'Docente', telefono: '+584141112233', email: 'laura@colegio.edu', created_at: '2025-01-10' },
     { id: 'p-2', nombre: 'Ana', apellido: 'Torres', cargo: 'Secretaria', tipo: 'Administrativo', telefono: '+584168889900', email: 'ana@colegio.edu', created_at: '2025-01-11' },
     { id: 'p-3', nombre: 'Luis', apellido: 'Brito', cargo: 'Mantenimiento', tipo: 'Obrero', telefono: '+584125556677', email: '', created_at: '2025-01-11' },
+    { id: 'p-4', nombre: 'Carmen', apellido: 'Salas', cargo: 'Aseadora', tipo: 'Mantenimiento', telefono: '+584141230001', email: '', created_at: '2025-01-12' },
+    { id: 'p-5', nombre: 'Ramón', apellido: 'Díaz', cargo: 'Aseador', tipo: 'Mantenimiento', telefono: '+584241230002', email: '', created_at: '2025-01-12' },
   ],
   materias: [
     { id: 'mat-1', nombre: 'Matemática', color: '#2A2F6B', maestro_id: 'm-1', created_at: '2025-01-15' },
     { id: 'mat-2', nombre: 'Lengua y Literatura', color: '#C0392B', maestro_id: 'm-1', created_at: '2025-01-15' },
     { id: 'mat-3', nombre: 'Ciencias Naturales', color: '#2E7D52', maestro_id: 'm-1', created_at: '2025-01-15' },
     { id: 'mat-4', nombre: 'Historia', color: '#C99A2E', maestro_id: 'm-1', created_at: '2025-01-15' },
+    { id: 'mat-5', nombre: 'Matemática', color: '#3B5BDB', maestro_id: 'm-3', created_at: '2025-01-15' },
+    { id: 'mat-6', nombre: 'Castellano', color: '#C2255C', maestro_id: 'm-3', created_at: '2025-01-15' },
+    { id: 'mat-7', nombre: 'Biología', color: '#2B8A3E', maestro_id: 'm-4', created_at: '2025-01-15' },
+    { id: 'mat-8', nombre: 'Inglés', color: '#E8590C', maestro_id: 'm-4', created_at: '2025-01-15' },
   ],
   planificaciones: [
     { id: 'pl-1', materia_id: 'mat-1', maestro_id: 'm-1', titulo: 'Fracciones equivalentes', fecha: '2025-07-01', contenido: 'Introducir el concepto de fracción equivalente con material concreto. Actividad práctica en pizarra.', color: '#2A2F6B', aprobador_id: 'u-aprob', status: 'pendiente', correcciones: '', created_at: '2025-06-20' },
@@ -40,6 +50,11 @@ export const seed = {
   items_alumno: [
     { id: 'it-1', alumno_id: 'a-1', categoria: 'calificacion', materia: 'Matemática', titulo: 'Examen unidad 1', valor: '18/20', detalle: '', created_at: '2025-03-01' },
     { id: 'it-2', alumno_id: 'a-1', categoria: 'alergia', materia: '', titulo: 'Penicilina', valor: '', detalle: 'Reacción cutánea. Avisar a enfermería.', created_at: '2025-03-02' },
+    { id: 'it-4', alumno_id: 'a-2', categoria: 'calificacion', materia: 'Matemática', titulo: 'Prueba corta: ecuaciones', valor: '16/20', detalle: '', created_at: '2026-09-20' },
+    { id: 'it-5', alumno_id: 'a-2', categoria: 'calificacion', materia: 'Matemática', titulo: 'Taller grupal', valor: '19/20', detalle: '', created_at: '2026-09-27' },
+    { id: 'it-6', alumno_id: 'a-2', categoria: 'calificacion', materia: 'Castellano', titulo: 'Ensayo argumentativo', valor: '14/20', detalle: 'Revisar conectores.', created_at: '2026-09-24' },
+    { id: 'it-7', alumno_id: 'a-2', categoria: 'calificacion', materia: 'Biología', titulo: 'Examen: la célula', valor: '9/20', detalle: 'Puede recuperar en la próxima evaluación.', created_at: '2026-09-25' },
+    { id: 'it-8', alumno_id: 'a-2', categoria: 'calificacion', materia: 'Inglés', titulo: 'Oral presentation', valor: '18/20', detalle: '', created_at: '2026-09-30' },
     { id: 'it-3', alumno_id: 'a-4', categoria: 'nota', materia: '', titulo: 'Comportamiento', valor: '', detalle: 'Muy participativo en clase.', created_at: '2025-03-03' },
   ],
   // Tareas que la maestra asigna a todo el grado/sección. El alumno las ve en su portal.
@@ -48,6 +63,10 @@ export const seed = {
     { id: 't-2', materia_id: 'mat-2', maestro_id: 'm-1', grado: '3er Grado', seccion: 'A', titulo: 'Lee un cuento y dibuja', descripcion: 'Lee el cuento "El león y el ratón" y haz un dibujo de tu parte favorita.', fecha_entrega: '2026-07-01', color: '#C0392B', created_at: '2026-06-25' },
     { id: 't-3', materia_id: 'mat-3', maestro_id: 'm-1', grado: '3er Grado', seccion: 'A', titulo: 'Las plantas y sus partes', descripcion: 'Colorea la lámina de la planta y escribe el nombre de cada parte.', fecha_entrega: '2026-06-30', color: '#2E7D52', created_at: '2026-06-24' },
     { id: 't-4', materia_id: 'mat-4', maestro_id: 'm-1', grado: '3er Grado', seccion: 'A', titulo: 'Mi comunidad', descripcion: 'Pregunta a tu familia un cuento sobre el lugar donde vives y compártelo en clase.', fecha_entrega: '2026-07-05', color: '#C99A2E', created_at: '2026-06-27' },
+    { id: 't-5', materia_id: 'mat-5', maestro_id: 'm-3', grado: '1er Año', seccion: 'B', titulo: 'Guía de ecuaciones lineales', descripcion: 'Resolver los ejercicios 1 al 15 de la guía. Mostrar el procedimiento.', fecha_entrega: '2026-10-06', color: '#3B5BDB', created_at: '2026-10-01' },
+    { id: 't-6', materia_id: 'mat-6', maestro_id: 'm-3', grado: '1er Año', seccion: 'B', titulo: 'Reseña de «Doña Bárbara» (cap. 1-5)', descripcion: 'Una página. Personajes principales y conflicto.', fecha_entrega: '2026-10-09', color: '#C2255C', created_at: '2026-10-01' },
+    { id: 't-7', materia_id: 'mat-7', maestro_id: 'm-4', grado: '1er Año', seccion: 'B', titulo: 'Maqueta de la célula animal', descripcion: 'En equipos de 3. Señalar organelos.', fecha_entrega: '2026-10-14', color: '#2B8A3E', created_at: '2026-10-02' },
+    { id: 't-8', materia_id: 'mat-8', maestro_id: 'm-4', grado: '1er Año', seccion: 'B', titulo: 'Vocabulary list unit 3', descripcion: '', fecha_entrega: '2026-10-02', color: '#E8590C', created_at: '2026-09-28' },
   ],
   // Libros/PDF que usa la maestra, organizados por materia. Se guardan por enlace (URL).
   libros: [
@@ -77,5 +96,22 @@ export const seed = {
     { id: 'f-2', alumno_id: 'a-3', representante_id: 'r-2', concepto: 'Mensualidad Junio', monto: 45, periodo: '2026-06', estado: 'enviada', fecha_emision: '2026-06-01', fecha_pago: '', created_at: '2026-06-01' },
     { id: 'f-3', alumno_id: 'a-3', representante_id: 'r-2', concepto: 'Mensualidad Mayo', monto: 45, periodo: '2026-05', estado: 'pendiente', fecha_emision: '2026-05-01', fecha_pago: '', created_at: '2026-05-01' },
     { id: 'f-4', alumno_id: 'a-1', representante_id: 'r-1', concepto: 'Mensualidad Junio', monto: 45, periodo: '2026-06', estado: 'pagada', fecha_emision: '2026-06-01', fecha_pago: '2026-06-05', created_at: '2026-06-01' },
+  ],
+  // Módulo Mantenimiento
+  mant_zonas: [
+    { id: 'z-1', nombre: 'Aulas de primaria', area: 'Planta baja', descripcion: 'Aulas 1 a 6 y pasillo.', created_at: '2026-01-10' },
+    { id: 'z-2', nombre: 'Baños principales', area: 'Planta baja', descripcion: 'Baños de niñas y varones.', created_at: '2026-01-10' },
+    { id: 'z-3', nombre: 'Patio y cancha', area: 'Exterior', descripcion: '', created_at: '2026-01-10' },
+  ],
+  mant_horarios: [
+    { id: 'h-1', zona_id: 'z-1', personal_id: 'p-4', dias: 'lun,mar,mie,jue,vie', hora_inicio: '06:30', hora_fin: '07:30', tarea: 'Barrer y limpiar pupitres', created_at: '2026-01-10' },
+    { id: 'h-2', zona_id: 'z-2', personal_id: 'p-5', dias: 'lun,mar,mie,jue,vie', hora_inicio: '10:00', hora_fin: '10:45', tarea: 'Desinfección', created_at: '2026-01-10' },
+    { id: 'h-3', zona_id: 'z-3', personal_id: 'p-5', dias: 'lun,mie,vie', hora_inicio: '13:00', hora_fin: '14:00', tarea: 'Recolección de basura', created_at: '2026-01-10' },
+  ],
+  mant_pedidos: [
+    { id: 'mp-1', items: JSON.stringify([{ nombre: 'Cloro', cantidad: 4, unidad: 'galones' }, { nombre: 'Bolsas de basura grandes', cantidad: 2, unidad: 'paquetes' }, { nombre: 'Papel higiénico', cantidad: 3, unidad: 'bultos' }]), nota: 'Se acabó el cloro de los baños.', urgencia: 'urgente', estado: 'pendiente', solicitado_por: 'u-mant', solicitante: 'Jorge Mendoza', created_at: '2026-10-02' },
+  ],
+  proveedores: [
+    { id: 'pv-1', nombre: 'Distribuidora La Limpieza', contacto: 'Sr. Andrés', telefono: '+584141119988', email: '', productos: 'Cloro, desinfectante, jabón, bolsas', notas: 'Entrega en 24 h.', created_at: '2026-01-05' },
   ],
 }

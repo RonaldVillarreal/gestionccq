@@ -207,7 +207,7 @@ export default function Facturacion () {
                               {a.grado}{a.seccion && ` · ${a.seccion}`} · Rep: {r ? `${r.nombre} ${r.apellido}` : 'sin asignar'}
                             </div>
                           </div>
-                          {a.moroso && <span className="badge badge-danger">Debe ${a.monto_deuda}</span>}
+                          {deudaDeAlumno(facturas.rows, a.id) > 0 && <span className="badge badge-danger">Debe ${deudaDeAlumno(facturas.rows, a.id)}</span>}
                         </button>
                       )
                     }) : <span style={{ fontSize: 13, color: 'var(--text-faint)', padding: '6px 4px' }}>Sin coincidencias para «{busca}».</span>}

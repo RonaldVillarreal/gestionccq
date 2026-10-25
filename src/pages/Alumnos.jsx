@@ -3,14 +3,17 @@ import { Plus, Upload, Trash2, GraduationCap, Download, Search, UserPlus, KeyRou
 import { Modal, Empty } from '../components/UI'
 import { useTable } from '../lib/useTable'
 import { readExcel, downloadTemplate } from '../lib/excel'
+import { deudasPorAlumno } from '../lib/finanzas'
 
 const NIVELES = ['Primaria', 'Secundaria']
-const empty = { nombre: '', apellido: '', cedula: '', nivel: 'Primaria', grado: '', seccion: '', representante_id: '', moroso: false, monto_deuda: 0, usuario: '', pass: '' }
+const empty = { nombre: '', apellido: '', cedula: '', nivel: 'Primaria', grado: '', seccion: '', representante_id: '', usuario: '', pass: '' }
 
 export default function Alumnos () {
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
   const usuarios = useTable('usuarios')
+  const facturas = useTable('facturas')
+  const deudas = deudasPorAlumno(facturas.rows)
   const [modal, setModal] = useState(false)
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState(empty)
@@ -32,6 +35,18 @@ export default function Alumnos () {
 
   function set (k, v) { setForm(f => ({ ...f, [k]: v })) }
 
+  /* Propone usuario (nombre.apellido, sin acentos, sin repetir) y una clave
+     fácil de dictar. Al entrar, el alumno ve el portal de su nivel. */
+  function generarAcceso () {
+    const limpio = (t) => (t || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z]/g, '')
+    const base = [limpio(form.nombre.split(' ')[0]), limpio(form.apellido.split(' ')[0])].filter(Boolean).join('.') || 'alumno'
+    const ocupado = (u) => usuarios.rows.some(x => x.usuario?.toLowerCase() === u)
+    let usuario = base
+    for (let i = 2; ocupado(usuario); i++) usuario = `${base}${i}`
+    const pass = `${limpio(form.nombre).slice(0, 4) || 'ccq'}${Math.floor(1000 + Math.random() * 9000)}`
+    setForm(f => ({ ...f, usuario, pass }))
+  }
+
   // Abre el modal en modo edición con los datos del alumno (incluido su login si lo tiene).
   function editar (a) {
     const u = usuarios.rows.find(x => x.id === a.usuario_id)
@@ -39,7 +54,7 @@ export default function Alumnos () {
     setForm({
       nombre: a.nombre || '', apellido: a.apellido || '', cedula: a.cedula || '',
       nivel: a.nivel || 'Primaria', grado: a.grado || '', seccion: a.seccion || '',
-      representante_id: a.representante_id || '', moroso: !!a.moroso, monto_deuda: a.monto_deuda || 0,
+      representante_id: a.representante_id || '',
       usuario: u?.usuario || '', pass: '',
     })
     setModal(true)
@@ -68,7 +83,7 @@ export default function Alumnos () {
       }
     }
     const { usuario, pass, ...datos } = form
-    const payload = { ...datos, representante_id: repId, usuario_id, monto_deuda: Number(form.monto_deuda) || 0 }
+    const payload = { ...datos, representante_id: repId, usuario_id }
     if (editId) await alumnos.update(editId, payload)
     else await alumnos.insert(payload)
     cerrar()
@@ -157,8 +172,8 @@ export default function Alumnos () {
                     <td><span className="badge badge-neutral">{a.nivel}</span></td>
                     <td>{a.grado} {a.seccion && `· ${a.seccion}`}</td>
                     <td>{repName(a.representante_id)}</td>
-                    <td>{a.moroso
-                      ? <span className="badge badge-danger">Moroso · ${a.monto_deuda}</span>
+                    <td>{deudas[a.id] > 0
+                      ? <span className="badge badge-danger">Moroso · ${deudas[a.id]}</span>
                       : <span className="badge badge-success">Al día</span>}</td>
                     <td>
                       <div className="row-actions">
@@ -231,15 +246,20 @@ export default function Alumnos () {
 
           {/* Acceso al portal del alumno (opcional) */}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-soft)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7 }}>
-              <KeyRound size={14} /> Acceso al portal del alumno <span style={{ fontWeight: 400 }}>(opcional)</span>
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-soft)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                <KeyRound size={14} /> Acceso al portal del alumno <span style={{ fontWeight: 400 }}>(opcional)</span>
+              </p>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={generarAcceso} disabled={!form.nombre}
+                title={!form.nombre ? 'Escribe primero el nombre' : 'Crear usuario y clave automáticamente'}>Generar acceso</button>
+            </div>
             <div className="grid-form">
               <div className="field"><label>Usuario</label><input className="input" value={form.usuario} onChange={e => set('usuario', e.target.value)} placeholder="Ej: sofia" /></div>
               <div className="field"><label>Contraseña</label><input className="input" value={form.pass} onChange={e => set('pass', e.target.value)} placeholder={editId ? 'Dejar en blanco para conservar' : ''} /></div>
             </div>
             <span style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 8, display: 'block' }}>
-              Si el usuario ya existe, se vincula a este alumno. Para crear uno nuevo, escribe usuario y contraseña.
+              Si el usuario ya existe, se vincula a este alumno. Para crear uno nuevo, escribe usuario y contraseña o usa «Generar acceso».
+              {form.nivel === 'Secundaria' && ' Al entrar verá el portal de secundaria.'}
             </span>
           </div>
         </Modal>

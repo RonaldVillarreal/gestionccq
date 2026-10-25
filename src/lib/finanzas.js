@@ -87,6 +87,14 @@ export function deudaDeAlumno (facturas, alumnoId) {
     .reduce((s, f) => s + monto(f), 0)
 }
 
+/** Deuda de cada alumno según sus facturas sin pagar: { alumnoId: monto }.
+    Es la única fuente de verdad de la morosidad (no el flag `moroso`). */
+export function deudasPorAlumno (facturas = []) {
+  const acc = {}
+  for (const f of facturas.filter(esDeuda)) acc[f.alumno_id] = (acc[f.alumno_id] || 0) + monto(f)
+  return acc
+}
+
 /** Mensaje de cobranza listo para WhatsApp o correo. */
 export function mensajeCobranza ({ repNombre, alumnoNombre, concepto, monto: m, periodo, institucion = 'Colegio Cardenal Quintero' }) {
   const saludo = repNombre ? `Estimado/a ${repNombre}` : 'Estimado/a representante'

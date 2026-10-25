@@ -3,7 +3,7 @@
    tipografía display "Fraunces" con cuerpo "Inter". Modo claro/oscuro
    por atributo data-theme en <html>.
 ==================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root, [data-theme="light"] {
   --bg: #F5F4F0;
@@ -305,3 +305,17 @@ input, select, textarea { font-family: inherit; }
 .sa-paleta em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-left: 6px; }
 .sa-color { width: 44px; height: 40px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); cursor: pointer; flex-shrink: 0; }
 .modal-foot { position: sticky; bottom: 0; background: var(--surface); flex-wrap: wrap; align-items: center; }
+
+/* ---------- Módulo Mantenimiento ---------- */
+.mt-item { display: grid; grid-template-columns: 80px 110px 1fr auto; gap: 8px; align-items: center; }
+@media (max-width: 560px) { .mt-item { grid-template-columns: 58px 84px 1fr auto; gap: 6px; } .mt-item .input { padding: 9px 8px; } }
+.mt-turno { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+.mt-dias { display: flex; flex-wrap: wrap; gap: 6px; }
+.mt-dias button { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; font-weight: 600; color: var(--text-soft); }
+.mt-dias button[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.sa-modulo { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; background: var(--surface-2); }
+.sa-modulo[data-activo="true"] { border-color: var(--primary); background: var(--primary-soft); }
+.sa-modulo input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
+.sa-modulo span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.sa-modulo small { font-size: 12px; color: var(--text-soft); }

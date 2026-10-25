@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { Receipt, Bell, Send, AlertTriangle, Plus, Trash2, ShieldCheck, KeyRound } from 'lucide-react'
+import { Receipt, Bell, AlertTriangle, Plus, Trash2, ShieldCheck, KeyRound } from 'lucide-react'
 import { Modal, Empty, WhatsAppButton } from '../components/UI'
 import { useTable } from '../lib/useTable'
+import { useInstitucion } from '../context/InstitucionContext'
+import { esDeuda, deudasPorAlumno } from '../lib/finanzas'
 
 /* La acción "Enviar recordatorio" está lista para conectarse a n8n en la fase 2.
    Cambia N8N_WEBHOOK por tu URL de webhook y se enviarán los datos del alumno
@@ -12,18 +14,30 @@ export default function Administrativo () {
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
   const usuarios = useTable('usuarios')
+  const facturas = useTable('facturas')
+  const { tieneModulo } = useInstitucion()
   const [tab, setTab] = useState('morosos')
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState({ nombre: '', usuario: '', pass: '', rol: 'admin', email: '' })
 
-  const morosos = alumnos.rows.filter(a => a.moroso)
-  const totalDeuda = morosos.reduce((s, a) => s + (Number(a.monto_deuda) || 0), 0)
+  // La morosidad sale de las facturas sin pagar (las que gestiona la Administradora).
+  const deudas = deudasPorAlumno(facturas.rows)
+  const morosos = alumnos.rows.filter(a => deudas[a.id] > 0)
+  const totalDeuda = morosos.reduce((s, a) => s + deudas[a.id], 0)
   const repOf = (id) => representantes.rows.find(r => r.id === id)
+
+  async function marcarPagado (alumno) {
+    if (!confirm(`¿Marcar como pagadas todas las facturas pendientes de ${alumno.nombre}?`)) return
+    const hoy = new Date().toISOString().slice(0, 10)
+    for (const f of facturas.rows.filter(f => f.alumno_id === alumno.id && esDeuda(f))) {
+      await facturas.update(f.id, { estado: 'pagada', fecha_pago: hoy })
+    }
+  }
 
   async function enviarRecordatorio (alumno) {
     const rep = repOf(alumno.representante_id)
     const payload = {
-      alumno: `${alumno.nombre} ${alumno.apellido}`, deuda: alumno.monto_deuda,
+      alumno: `${alumno.nombre} ${alumno.apellido}`, deuda: deudas[alumno.id],
       representante: rep ? `${rep.nombre} ${rep.apellido}` : null,
       telefono: rep?.telefono || null, email: rep?.email || null,
     }
@@ -35,7 +49,7 @@ export default function Administrativo () {
     } else {
       // Fallback: abrir WhatsApp del representante
       if (rep?.telefono) {
-        const msg = `Estimado/a ${rep.nombre}, le recordamos el pago pendiente de ${alumno.nombre} ${alumno.apellido} por $${alumno.monto_deuda}. Gracias.`
+        const msg = `Estimado/a ${rep.nombre}, le recordamos el pago pendiente de ${alumno.nombre} ${alumno.apellido} por $${deudas[alumno.id]}. Gracias.`
         window.open(`https://wa.me/${rep.telefono.replace(/[^\d]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
       } else alert('El representante no tiene teléfono cargado. Configura N8N_WEBHOOK para envío automático.')
     }
@@ -88,14 +102,14 @@ export default function Administrativo () {
                           <td style={{ fontWeight: 600 }}>{a.nombre} {a.apellido}</td>
                           <td>{a.nivel} · {a.grado}</td>
                           <td>{rep ? `${rep.nombre} ${rep.apellido}` : '—'}</td>
-                          <td><span className="badge badge-danger">${a.monto_deuda}</span></td>
+                          <td><span className="badge badge-danger">${deudas[a.id]}</span></td>
                           <td>
                             <div className="row-actions">
                               <button className="btn btn-accent btn-sm" onClick={() => enviarRecordatorio(a)}>
                                 <Bell size={14} /> Recordatorio
                               </button>
-                              <WhatsAppButton phone={rep?.telefono} message={`Estimado/a ${rep?.nombre || ''}, le recordamos el pago pendiente de ${a.nombre} por $${a.monto_deuda}.`} />
-                              <button className="btn btn-ghost btn-sm" onClick={() => alumnos.update(a.id, { moroso: false, monto_deuda: 0 })}>Marcar pagado</button>
+                              <WhatsAppButton phone={rep?.telefono} message={`Estimado/a ${rep?.nombre || ''}, le recordamos el pago pendiente de ${a.nombre} por $${deudas[a.id]}.`} />
+                              <button className="btn btn-ghost btn-sm" onClick={() => marcarPagado(a)}>Marcar pagado</button>
                             </div>
                           </td>
                         </tr>
@@ -104,16 +118,6 @@ export default function Administrativo () {
                   </tbody>
                 </table>
               ) : <Empty icon={AlertTriangle} title="Sin morosos" hint="Todos los alumnos están al día." />}
-            </div>
-          </div>
-
-          <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--accent-soft)', border: '1px solid var(--accent)' }}>
-            <Send size={22} color="var(--accent)" />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>Fase 2 · Automatización con n8n</div>
-              <p style={{ fontSize: 13, color: 'var(--text-soft)' }}>
-                Define <code>N8N_WEBHOOK</code> en <code>src/pages/Administrativo.jsx</code> para enviar recordatorios automáticos por WhatsApp/email. Sin webhook, el botón abre WhatsApp del representante.
-              </p>
             </div>
           </div>
         </>
@@ -158,6 +162,7 @@ export default function Administrativo () {
                 <option value="maestro">Maestro</option>
                 <option value="aprobador">Aprobador</option>
                 <option value="alumno">Alumno</option>
+                {tieneModulo('mantenimiento') && <option value="mantenimiento">Jefe de mantenimiento</option>}
               </select>
             </div>
             <div className="field"><label>Usuario *</label><input className="input" value={form.usuario} onChange={e => setForm({ ...form, usuario: e.target.value })} /></div>

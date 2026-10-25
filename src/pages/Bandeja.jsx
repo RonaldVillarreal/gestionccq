@@ -1,12 +1,14 @@
 import { Inbox, CheckCheck, Trash2, Dot } from 'lucide-react'
 import { Empty, Loading } from '../components/UI'
 import { useInbox, TIPOS_NOTI } from '../lib/inbox'
+import { useEsSecundaria } from '../components/PortalAlumno'
 
 /* Bandeja de entrada compartida por el alumno y el maestro.
    Muestra los avisos dirigidos al usuario logueado (tareas, entregas,
    medallas), con no-leídas resaltadas. */
 export default function Bandeja () {
   const { mias, noLeidas, loading, marcarLeido, marcarTodo, eliminar } = useInbox()
+  const sobrio = useEsSecundaria() // en secundaria, sin emojis
 
   if (loading) return <Loading label="Cargando tu bandeja…" />
 
@@ -14,9 +16,9 @@ export default function Bandeja () {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h1 style={{ fontSize: 28 }}>📬 Bandeja de entrada</h1>
+          <h1 style={{ fontSize: 28 }}>{sobrio ? '' : '📬 '}Bandeja de entrada</h1>
           <p style={{ color: 'var(--text-soft)', marginTop: 4 }}>
-            {noLeidas ? `Tienes ${noLeidas} aviso${noLeidas === 1 ? '' : 's'} sin leer.` : 'Estás al día. ¡No hay avisos nuevos!'}
+            {noLeidas ? `Tienes ${noLeidas} aviso${noLeidas === 1 ? '' : 's'} sin leer.` : (sobrio ? 'Estás al día. No hay avisos nuevos.' : 'Estás al día. ¡No hay avisos nuevos!')}
           </p>
         </div>
         {noLeidas > 0 && (
@@ -35,7 +37,7 @@ export default function Bandeja () {
                   borderLeft: `4px solid ${n.leido ? 'var(--border)' : 'var(--primary)'}`,
                   background: n.leido ? 'var(--surface)' : 'var(--primary-soft)',
                 }}>
-                <div style={{ fontSize: 26, lineHeight: 1 }}>{t.emoji}</div>
+                {!sobrio && <div style={{ fontSize: 26, lineHeight: 1 }}>{t.emoji}</div>}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span style={{ fontWeight: 700, fontSize: 15 }}>{n.titulo}</span>

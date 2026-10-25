@@ -3,7 +3,7 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveCo
 import { StatCard } from '../components/UI'
 import ControlesFinanzas from '../components/ControlesFinanzas'
 import { useTable } from '../lib/useTable'
-import { resumenFacturas, ingresosPorPeriodo, facturasDeAnioEscolar, etiquetaAnioEscolar } from '../lib/finanzas'
+import { resumenFacturas, ingresosPorPeriodo, facturasDeAnioEscolar, etiquetaAnioEscolar, deudasPorAlumno } from '../lib/finanzas'
 import { useVistaFinanzas } from '../lib/useVistaFinanzas'
 
 export default function Dashboard () {
@@ -17,7 +17,9 @@ export default function Dashboard () {
   const facturasAnio = facturasDeAnioEscolar(facturas.rows, vista.anioEscolar)
   const fin = resumenFacturas(facturasAnio)
   const ingresos = ingresosPorPeriodo(facturasAnio)
-  const morosos = alumnos.rows.filter(a => a.moroso)
+  // La deuda no se reinicia con el año escolar: se cuenta sobre todas las facturas.
+  const deudas = deudasPorAlumno(facturas.rows)
+  const morosos = alumnos.rows.filter(a => deudas[a.id] > 0)
   const porNivel = ['Primaria', 'Secundaria'].map(n => ({
     nivel: n, alumnos: alumnos.rows.filter(a => a.nivel === n).length,
   }))
@@ -40,7 +42,7 @@ export default function Dashboard () {
         <StatCard icon={Users} label="Representantes" value={representantes.rows.length} tone="accent" />
         <StatCard icon={Briefcase} label="Personal" value={personal.rows.length} tone="primary" />
         <StatCard icon={AlertTriangle} label="Alumnos morosos" value={morosos.length} tone="danger"
-          sub={morosos.length ? `${vista.money(morosos.reduce((s, a) => s + (Number(a.monto_deuda) || 0), 0))} adeudados` : 'Al día'} />
+          sub={morosos.length ? `${vista.money(morosos.reduce((s, a) => s + deudas[a.id], 0))} adeudados` : 'Al día'} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>

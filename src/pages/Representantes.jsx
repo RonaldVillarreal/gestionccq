@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { Plus, Trash2, Users, ChevronDown, ChevronRight, Phone, Mail, GraduationCap } from 'lucide-react'
 import { Modal, Empty, WhatsAppButton } from '../components/UI'
 import { useTable } from '../lib/useTable'
+import { deudasPorAlumno } from '../lib/finanzas'
 
 const empty = { nombre: '', apellido: '', cedula: '', telefono: '', email: '', parentesco: 'Madre' }
 
 export default function Representantes () {
   const representantes = useTable('representantes')
   const alumnos = useTable('alumnos')
+  const facturas = useTable('facturas')
+  const deudas = deudasPorAlumno(facturas.rows)
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState(empty)
   const [openId, setOpenId] = useState(null)
@@ -73,7 +76,7 @@ export default function Representantes () {
                             </div>
                             <span style={{ fontWeight: 600 }}>{a.nombre} {a.apellido}</span>
                             <span className="badge badge-neutral">{a.nivel} · {a.grado}</span>
-                            {a.moroso && <span className="badge badge-danger">Moroso ${a.monto_deuda}</span>}
+                            {deudas[a.id] > 0 && <span className="badge badge-danger">Moroso ${deudas[a.id]}</span>}
                           </div>
                         ))}
                       </div>

@@ -38,7 +38,7 @@ export const PALETAS = [
 
 export function slugify (txt) {
   return (txt || '')
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     .slice(0, 40)
 }

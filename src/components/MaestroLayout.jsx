@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, CalendarRange, FileText, ClipboardList, GraduationCap, BookOpenCheck, Library, Inbox, ScrollText, LogOut, Menu, ChevronLeft } from 'lucide-react'
 import { ThemeToggle, LogoImg, useNombreInstitucion } from './UI'
 import { useAuth } from '../context/AuthContext'
+import { useInstitucion } from '../context/InstitucionContext'
 import { useInbox } from '../lib/inbox'
 
 const nav = [
@@ -11,8 +12,8 @@ const nav = [
   { to: '/maestro/tareas', icon: BookOpenCheck, label: 'Tareas' },
   { to: '/maestro/bandeja', icon: Inbox, label: 'Bandeja', inbox: true },
   { to: '/maestro/biblioteca', icon: Library, label: 'Biblioteca' },
-  { to: '/maestro/planificacion', icon: CalendarRange, label: 'Planificación' },
-  { to: '/maestro/fichas', icon: ScrollText, label: 'Fichas' },
+  { to: '/maestro/planificacion', icon: CalendarRange, label: 'Planificación', modulo: 'planificacion' },
+  { to: '/maestro/fichas', icon: ScrollText, label: 'Fichas', modulo: 'fichas' },
   { to: '/maestro/boletas', icon: FileText, label: 'Boletas' },
   { to: '/maestro/calificaciones', icon: ClipboardList, label: 'Calificaciones' },
 ]
@@ -24,6 +25,7 @@ export default function MaestroLayout () {
   const nombreInst = useNombreInstitucion()
   const { noLeidas } = useInbox()
   const navigate = useNavigate()
+  const { tieneModulo } = useInstitucion()
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -41,7 +43,7 @@ export default function MaestroLayout () {
         </div>
 
         <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-          {nav.map(item => {
+          {nav.filter(item => tieneModulo(item.modulo)).map(item => {
             const badge = item.inbox && noLeidas > 0
             return (
               <NavLink key={item.to} to={item.to} end={item.end}

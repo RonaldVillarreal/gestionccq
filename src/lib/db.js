@@ -16,6 +16,8 @@ const TABLES = [
   'materias', 'planificaciones', 'usuarios', 'items_alumno',
   'tareas', 'libros', 'entregas', 'facturas',
   'medallas', 'notificaciones', 'fichas', 'instituciones',
+  'mant_zonas', 'mant_horarios', 'mant_pedidos', 'proveedores',
+  'apuntes',
 ]
 
 /* ---------- Multi-institución ----------
@@ -49,6 +51,9 @@ const local = {
     const db = loadLocal()
     const rows = db[table] || []
     return scoped ? rows.filter(r => esDelTenant(r)) : rows
+  },
+  async listWhere (table, campo, valor) {
+    return (await local.list(table)).filter(r => r[campo] === valor)
   },
   async insert (table, row) {
     const db = loadLocal()
@@ -115,6 +120,12 @@ const remote = {
       return res.documents.map(fromDoc)
     }
   },
+  async listWhere (table, campo, valor) {
+    const res = await databases.listDocuments(DB_ID, table, [
+      ...tenantQuery(tenant), Query.equal(campo, valor), Query.orderDesc('$createdAt'), Query.limit(500),
+    ])
+    return res.documents.map(fromDoc)
+  },
   async insert (table, row) {
     try {
       const doc = await databases.createDocument(DB_ID, table, ID.unique(), toDoc(row))
@@ -150,6 +161,8 @@ export const db = {
   tables: TABLES,
   isRemote: hasAppwrite,
   list: (t) => backend.list(t, !GLOBAL.has(t)),
+  /* Lista filtrada por un campo (para colecciones que crecen mucho, ej. apuntes). */
+  listWhere: (t, campo, valor) => backend.listWhere(t, campo, valor),
   insert: (t, row) => backend.insert(t, GLOBAL.has(t) ? row : { institucion_id: tenant, ...row }),
   update: (t, id, patch) => backend.update(t, id, patch),
   remove: (t, id) => backend.remove(t, id),

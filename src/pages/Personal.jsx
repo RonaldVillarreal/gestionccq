@@ -4,7 +4,7 @@ import { Modal, Empty, WhatsAppButton } from '../components/UI'
 import { useTable } from '../lib/useTable'
 import { readExcel, downloadTemplate } from '../lib/excel'
 
-const TIPOS = ['Docente', 'Administrativo', 'Obrero', 'Directivo', 'Otro']
+const TIPOS = ['Docente', 'Administrativo', 'Obrero', 'Mantenimiento', 'Directivo', 'Otro']
 const empty = { nombre: '', apellido: '', cargo: '', tipo: 'Administrativo', telefono: '', email: '' }
 
 export default function Personal () {

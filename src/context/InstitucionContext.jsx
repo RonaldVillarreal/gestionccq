@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { db, setTenant, DEFAULT_TENANT } from '../lib/db'
 import { PRINCIPAL, cssTema } from '../lib/instituciones'
+import { modulosDe } from '../lib/modulos'
 
 /* Institución activa (multi-colegio).
    - Con sesión: la de la sesión del usuario.
@@ -54,8 +55,11 @@ export function InstitucionProvider ({ children }) {
     else if (enSuper) document.title = 'Super Admin · Sistemas de Gestión'
   }, [info, enSuper])
 
+  const activos = modulosDe(info)
+  const tieneModulo = (id) => !id || activos.includes(id)
+
   return (
-    <InstCtx.Provider value={{ slug, setSlug, info, cargando }}>
+    <InstCtx.Provider value={{ slug, setSlug, info, cargando, tieneModulo }}>
       {css && <style>{css}</style>}
       {children}
     </InstCtx.Provider>

@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, GraduationCap, Users, UserCog, Briefcase,
-  Receipt, LogOut, Menu, ChevronLeft
+  Receipt, LogOut, Menu, ChevronLeft, SprayCan
 } from 'lucide-react'
 import { Logo, ThemeToggle, LogoImg } from '../components/UI'
 import { useAuth } from '../context/AuthContext'
+import { useInstitucion } from '../context/InstitucionContext'
 import { db } from '../lib/db'
 
 const nav = [
@@ -15,6 +16,7 @@ const nav = [
   { to: '/admin/representantes', icon: Users, label: 'Representantes' },
   { to: '/admin/personal', icon: Briefcase, label: 'Personal' },
   { to: '/admin/administrativo', icon: Receipt, label: 'Administrativo' },
+  { to: '/admin/mantenimiento', icon: SprayCan, label: 'Mantenimiento', modulo: 'mantenimiento' },
 ]
 
 export default function AdminLayout () {
@@ -22,6 +24,7 @@ export default function AdminLayout () {
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 820)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { tieneModulo } = useInstitucion()
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -36,7 +39,7 @@ export default function AdminLayout () {
         </div>
 
         <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
-          {nav.map(item => (
+          {nav.filter(item => tieneModulo(item.modulo)).map(item => (
             <NavLink
               key={item.to} to={item.to} end={item.end}
               style={({ isActive }) => ({

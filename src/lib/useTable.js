@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
 import { db } from '../lib/db'
 
-export function useTable (table) {
+/* `filtro` opcional: [campo, valor] → solo trae esos registros
+   (con valor vacío no consulta nada todavía). */
+export function useTable (table, filtro) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [campo, valor] = filtro || []
 
   const refresh = useCallback(async () => {
+    if (campo && !valor) { setRows([]); setLoading(false); return }
     setLoading(true)
-    try { setRows(await db.list(table)) }
+    try { setRows(await (campo ? db.listWhere(table, campo, valor) : db.list(table))) }
     finally { setLoading(false) }
-  }, [table])
+  }, [table, campo, valor])
 
   useEffect(() => { refresh() }, [refresh])
 

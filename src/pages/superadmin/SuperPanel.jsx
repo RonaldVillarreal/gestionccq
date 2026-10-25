@@ -4,6 +4,7 @@ import { ThemeToggle, Modal, Loading } from '../../components/UI'
 import { useSuperAdmin } from '../../context/SuperAdminContext'
 import { db, DEFAULT_TENANT } from '../../lib/db'
 import { PRINCIPAL, PALETAS, TIPOS, slugify, leerLogo, rutaLogin } from '../../lib/instituciones'
+import { MODULOS, modulosDe, modulosPorDefecto, serializarModulos } from '../../lib/modulos'
 
 /* Panel del Super Admin: lista de sistemas de gestión (uno por institución)
    en cards, con crear, editar, activar/desactivar y eliminar.            */
@@ -12,10 +13,11 @@ const VACIO = {
   nombre: '', slug: '', tipo: 'colegio', estado: 'activo', logo: '',
   color_primario: PALETAS[0][1], color_acento: PALETAS[0][2],
   ciudad: '', direccion: '', telefono: '', email: '', responsable: '',
+  modulos: modulosPorDefecto(), // en el formulario es una lista; se guarda como JSON
   // Solo al crear: administrador inicial del sistema.
   admin_nombre: '', admin_usuario: 'admin', admin_pass: '',
 }
-const CAMPOS = ['nombre', 'slug', 'tipo', 'estado', 'logo', 'color_primario', 'color_acento', 'ciudad', 'direccion', 'telefono', 'email', 'responsable']
+const CAMPOS = ['nombre', 'slug', 'tipo', 'estado', 'logo', 'color_primario', 'color_acento', 'ciudad', 'direccion', 'telefono', 'email', 'responsable', 'modulos']
 const pick = (o) => Object.fromEntries(CAMPOS.map(k => [k, o[k] ?? '']))
 const tipoLabel = (id) => TIPOS.find(t => t.id === id)?.label || id
 const urlDe = (slug) => window.location.origin + rutaLogin(slug)
@@ -162,6 +164,8 @@ function TarjetaSistema ({ r, onEditar, onEstado, onEliminar }) {
         </div>
 
         <dl className="sa-datos">
+          <dt>Módulos</dt>
+          <dd>{modulosDe(r).length ? MODULOS.filter(m => modulosDe(r).includes(m.id)).map(m => m.label).join(', ') : 'Ninguno'}</dd>
           <dt>Acceso</dt>
           <dd style={{ display: 'flex', gap: 8, alignItems: 'center', minWidth: 0 }}>
             <a href={rutaLogin(r.slug)} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -198,7 +202,7 @@ function LogoBox ({ logo, nombre, color, size = 52 }) {
 /* ---------------- Crear / editar ---------------- */
 function FormSistema ({ inicial, existentes, onClose, onSaved }) {
   const nuevo = !inicial
-  const [form, setForm] = useState(() => (nuevo ? VACIO : { ...VACIO, ...pick(inicial) }))
+  const [form, setForm] = useState(() => (nuevo ? VACIO : { ...VACIO, ...pick(inicial), modulos: modulosDe(inicial) }))
   const [slugManual, setSlugManual] = useState(!nuevo)
   const [error, setError] = useState('')
   const [guardando, setGuardando] = useState(false)
@@ -226,7 +230,7 @@ function FormSistema ({ inicial, existentes, onClose, onSaved }) {
 
     setGuardando(true)
     try {
-      const datos = { ...pick(form), nombre: form.nombre.trim(), slug }
+      const datos = { ...pick(form), nombre: form.nombre.trim(), slug, modulos: serializarModulos(form.modulos) }
       if (!nuevo) {
         delete datos.slug // la dirección no cambia: los datos están ligados a ella
         await db.update('instituciones', inicial.id, datos)
@@ -322,6 +326,24 @@ function FormSistema ({ inicial, existentes, onClose, onSaved }) {
           <ColorInput label="Color de acento" value={form.color_acento} onChange={v => set('color_acento', v)} />
         </div>
         <Vista form={form} />
+      </Seccion>
+
+      <Seccion titulo="Módulos" nota="Funciones activas en este sistema. Lo que desactives deja de aparecer en los menús y sus usuarios no podrán entrar a esa sección.">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {MODULOS.map(m => {
+            const activo = form.modulos.includes(m.id)
+            return (
+              <label key={m.id} className="sa-modulo" data-activo={activo}>
+                <input type="checkbox" checked={activo}
+                  onChange={() => set('modulos', activo ? form.modulos.filter(x => x !== m.id) : [...form.modulos, m.id])} />
+                <span>
+                  <b>{m.label}</b>
+                  <small>{m.desc}</small>
+                </span>
+              </label>
+            )
+          })}
+        </div>
       </Seccion>
 
       {nuevo && (

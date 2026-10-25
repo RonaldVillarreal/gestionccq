@@ -13,7 +13,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { Client, Databases, Permission, Role, ID } from 'node-appwrite'
+import { Client, Databases, Permission, Role, ID, Query } from 'node-appwrite'
 
 /* ---- Cargar variables desde .env (sin dependencias extra) ---- */
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -240,6 +240,52 @@ const SCHEMA = {
     ['telefono',       's', 64,     false],
     ['email',          's', 255,    false],
     ['responsable',    's', 255,    false],
+    ['modulos',        's', 2000,   false],  // JSON: ids de módulos activos (null = por defecto)
+  ],
+  // Apuntes personales del alumno de secundaria, organizados por materia.
+  apuntes: [
+    ['alumno_id', 's', 64,    false],
+    ['materia',   's', 128,   false],
+    ['titulo',    's', 255,   false],
+    ['contenido', 's', 20000, false],
+    ['fijado',    'b', false, false],
+  ],
+  // ---- Módulo Mantenimiento ----
+  // El personal a cargo del jefe vive en `personal` con tipo "Mantenimiento".
+  mant_zonas: [
+    ['nombre',      's', 128,  false],
+    ['area',        's', 128,  false],  // ej: Planta baja, Patio
+    ['descripcion', 's', 2000, false],
+  ],
+  // Turnos: quién limpia qué zona, qué días y a qué hora.
+  mant_horarios: [
+    ['zona_id',     's', 64,  false],
+    ['personal_id', 's', 64,  false],
+    ['dias',        's', 64,  false],  // ej: "lun,mie,vie"
+    ['hora_inicio', 's', 8,   false],
+    ['hora_fin',    's', 8,   false],
+    ['tarea',       's', 255, false],
+  ],
+  // Pedidos de implementos de limpieza que hace el jefe al director.
+  mant_pedidos: [
+    ['items',            's', 20000, false],  // JSON [{ nombre, cantidad, unidad }]
+    ['nota',             's', 2000,  false],
+    ['urgencia',         's', 16,    false],  // normal | urgente
+    ['estado',           's', 32,    false],  // pendiente | enviado | realizado
+    ['solicitado_por',   's', 64,    false],  // usuario_id del jefe
+    ['solicitante',      's', 255,   false],
+    ['proveedor_id',     's', 64,    false],
+    ['fecha_envio',      's', 32,    false],
+    ['fecha_realizado',  's', 32,    false],
+  ],
+  // Negocios que surten los implementos (el director los contacta por WhatsApp).
+  proveedores: [
+    ['nombre',    's', 255,  false],
+    ['contacto',  's', 255,  false],
+    ['telefono',  's', 64,   false],
+    ['email',     's', 255,  false],
+    ['productos', 's', 2000, false],
+    ['notas',     's', 2000, false],
   ],
 }
 
@@ -268,6 +314,9 @@ const INDEXES = {
   medallas:        [['idx_alumno', 'key', ['alumno_id']]],
   notificaciones:  [['idx_para', 'key', ['para']]],
   fichas:          [['idx_maestro', 'key', ['maestro_id']]],
+  mant_horarios:   [['idx_zona', 'key', ['zona_id']], ['idx_personal', 'key', ['personal_id']]],
+  mant_pedidos:    [['idx_estado', 'key', ['estado']]],
+  apuntes:         [['idx_alumno', 'key', ['alumno_id']]],
 }
 
 async function createAttribute (col, def) {
@@ -325,12 +374,14 @@ async function main () {
     { nombre: 'Carlos Rivas', usuario: 'crivas',  pass: 'aprobar123', rol: 'aprobador', email: 'carlos@colegio.edu' },
     { nombre: 'Sofía González', usuario: 'sofia', pass: 'alumno123', rol: 'alumno' },
     { nombre: 'Rosa Márquez', usuario: 'rosa', pass: 'admin123', rol: 'administradora', email: 'administracion@colegio.edu' },
+    { nombre: 'Jorge Mendoza', usuario: 'jmendoza', pass: 'limpieza123', rol: 'mantenimiento', institucion_id: 'ccq' },
   ]
   // Evita duplicados si vuelves a correr el script.
-  let existentes = []
-  try { existentes = (await databases.listDocuments(DB_ID, 'usuarios')).documents } catch {}
   for (const u of usuarios) {
-    if (existentes.some(e => e.usuario === u.usuario)) { console.log('  •', u.usuario, '(ya existía)'); continue }
+    // Busca por nombre de usuario (no lista todo: puede haber más de 25 usuarios).
+    let existentes = []
+    try { existentes = (await databases.listDocuments(DB_ID, 'usuarios', [Query.equal('usuario', u.usuario)])).documents } catch {}
+    if (existentes.length) { console.log('  •', u.usuario, '(ya existía)'); continue }
     await ok(u.usuario, () => databases.createDocument(DB_ID, 'usuarios', ID.unique(), u))
   }
 
