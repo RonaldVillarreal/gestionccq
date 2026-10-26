@@ -10,11 +10,19 @@ import { esDeuda, deudasPorAlumno } from '../lib/finanzas'
    moroso + su representante. Mientras tanto, abre WhatsApp directo. */
 const N8N_WEBHOOK = '' // ej: 'https://tu-n8n.com/webhook/recordatorio-pago'
 
+/* Roles de personal del colegio: al crear el usuario también se registra en
+   Personal (vinculado con `ref_id`). Los maestros se registran desde Maestros. */
+const PERSONAL_DE_ROL = {
+  mantenimiento: { tipo: 'Mantenimiento', cargo: 'Jefe de mantenimiento' },
+  administradora: { tipo: 'Administrativo', cargo: 'Administradora' },
+}
+
 export default function Administrativo () {
   const alumnos = useTable('alumnos')
   const representantes = useTable('representantes')
   const usuarios = useTable('usuarios')
   const facturas = useTable('facturas')
+  const personal = useTable('personal')
   const { tieneModulo } = useInstitucion()
   const [tab, setTab] = useState('morosos')
   const [modal, setModal] = useState(false)
@@ -57,8 +65,19 @@ export default function Administrativo () {
 
   async function guardarUsuario () {
     if (!form.nombre || !form.usuario || !form.pass) return alert('Completa nombre, usuario y clave.')
-    await usuarios.insert(form)
+    const u = await usuarios.insert(form)
+    const p = PERSONAL_DE_ROL[form.rol]
+    if (p) {
+      const [nombre, ...resto] = form.nombre.trim().split(/\s+/)
+      await personal.insert({ nombre, apellido: resto.join(' '), ...p, telefono: '', email: form.email, ref_id: u.id })
+    }
     setModal(false); setForm({ nombre: '', usuario: '', pass: '', rol: 'admin', email: '' })
+  }
+
+  async function eliminarUsuario (u) {
+    await usuarios.remove(u.id)
+    const p = personal.rows.find(x => x.ref_id === u.id)
+    if (p) await personal.remove(p.id)
   }
 
   return (
@@ -138,7 +157,7 @@ export default function Administrativo () {
                     <td style={{ color: 'var(--text-soft)' }}><KeyRound size={13} style={{ verticalAlign: -2 }} /> {u.usuario}</td>
                     <td><span className={`badge ${u.rol === 'admin' ? 'badge-primary' : u.rol === 'aprobador' ? 'badge-warning' : 'badge-neutral'}`} style={{ textTransform: 'capitalize' }}>{u.rol}</span></td>
                     <td style={{ color: 'var(--text-soft)' }}>{u.email || '—'}</td>
-                    <td>{u.usuario !== 'Ronald' && <button className="btn btn-ghost btn-sm" onClick={() => confirm('¿Eliminar usuario?') && usuarios.remove(u.id)}><Trash2 size={15} /></button>}</td>
+                    <td>{u.usuario !== 'Ronald' && <button className="btn btn-ghost btn-sm" onClick={() => confirm('¿Eliminar usuario?') && eliminarUsuario(u)}><Trash2 size={15} /></button>}</td>
                   </tr>
                 ))}
               </tbody>

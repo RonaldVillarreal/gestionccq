@@ -3,7 +3,7 @@ import { ClipboardList, Users, Plus, Pencil, Trash2, Store, MessageCircle } from
 import { Modal, Empty, WhatsAppButton, useNombreInstitucion } from '../components/UI'
 import { EditorItems, PedidoCard, ResumenZonas } from '../components/Mantenimiento'
 import { useTable } from '../lib/useTable'
-import { TIPO_PERSONAL, unirItems, mensajePedido, linkWhatsApp, textoDias, textoHora } from '../lib/mantenimiento'
+import { esEquipoMant, unirItems, mensajePedido, linkWhatsApp, textoDias, textoHora } from '../lib/mantenimiento'
 
 /* Vista del director para el módulo Mantenimiento:
    pedidos del jefe de mantenimiento → armar pedido al proveedor por WhatsApp,
@@ -166,7 +166,7 @@ function Pedidos ({ pedidos, proveedores, irAProveedores }) {
 
 /* ---------------- Personal de mantenimiento (solo lectura) ---------------- */
 function Personal ({ personal, horarios, zonas }) {
-  const equipo = personal.rows.filter(p => p.tipo === TIPO_PERSONAL)
+  const equipo = personal.rows.filter(esEquipoMant)
   const zona = (id) => zonas.rows.find(z => z.id === id)
   if (!equipo.length) return <div className="card"><Empty icon={Users} title="Sin personal de mantenimiento" hint="El jefe de mantenimiento lo registra desde su portal." /></div>
   return (

@@ -4,7 +4,7 @@ import { StatCard, Empty } from '../../components/UI'
 import { PedidoCard } from '../../components/Mantenimiento'
 import { useTable } from '../../lib/useTable'
 import { useAuth } from '../../context/AuthContext'
-import { TIPO_PERSONAL, DIAS, hoy, diasDe, textoHora } from '../../lib/mantenimiento'
+import { esEquipoMant, DIAS, hoy, diasDe, textoHora } from '../../lib/mantenimiento'
 
 export default function MantInicio () {
   const { user } = useAuth()
@@ -13,7 +13,7 @@ export default function MantInicio () {
   const horarios = useTable('mant_horarios')
   const pedidos = useTable('mant_pedidos')
 
-  const equipo = personal.rows.filter(p => p.tipo === TIPO_PERSONAL)
+  const equipo = personal.rows.filter(esEquipoMant)
   const dHoy = hoy()
   const turnosHoy = horarios.rows
     .filter(h => diasDe(h).includes(dHoy))

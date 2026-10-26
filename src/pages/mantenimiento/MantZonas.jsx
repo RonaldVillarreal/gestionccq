@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Modal } from '../../components/UI'
 import { ResumenZonas } from '../../components/Mantenimiento'
 import { useTable } from '../../lib/useTable'
-import { TIPO_PERSONAL, DIAS, diasDe } from '../../lib/mantenimiento'
+import { esEquipoMant, DIAS, diasDe } from '../../lib/mantenimiento'
 
 /* Zonas de la institución y turnos (quién limpia qué zona, qué días y a qué hora). */
 const ZONA_VACIA = { nombre: '', area: '', descripcion: '' }
@@ -16,7 +16,7 @@ export default function MantZonas () {
   const [zona, setZona] = useState(null)
   const [turno, setTurno] = useState(null)
 
-  const equipo = personal.rows.filter(p => p.tipo === TIPO_PERSONAL)
+  const equipo = personal.rows.filter(esEquipoMant)
   const ordenadas = [...zonas.rows].sort((a, b) => a.nombre.localeCompare(b.nombre))
 
   async function guardarZona () {

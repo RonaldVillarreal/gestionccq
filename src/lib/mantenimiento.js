@@ -5,6 +5,10 @@
 
 export const TIPO_PERSONAL = 'Mantenimiento'
 
+/** Personas a cargo del jefe. El propio jefe también está en `personal`
+    (vinculado a su usuario con `ref_id`), pero no es parte de su equipo. */
+export const esEquipoMant = (p) => p.tipo === TIPO_PERSONAL && !p.ref_id
+
 export const DIAS = [
   { id: 'lun', corto: 'Lu', label: 'Lunes' },
   { id: 'mar', corto: 'Ma', label: 'Martes' },

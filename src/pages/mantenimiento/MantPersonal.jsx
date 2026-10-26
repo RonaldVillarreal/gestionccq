@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Plus, Pencil, Trash2, Users } from 'lucide-react'
 import { Modal, Empty, WhatsAppButton } from '../../components/UI'
 import { useTable } from '../../lib/useTable'
-import { TIPO_PERSONAL, textoDias, textoHora } from '../../lib/mantenimiento'
+import { TIPO_PERSONAL, esEquipoMant, textoDias, textoHora } from '../../lib/mantenimiento'
 
 /* Personas a cargo del jefe de mantenimiento. Se guardan en `personal`
    con tipo "Mantenimiento", así el director también las ve en Personal. */
@@ -14,7 +14,7 @@ export default function MantPersonal () {
   const horarios = useTable('mant_horarios')
   const [form, setForm] = useState(null) // null | registro (con o sin id)
 
-  const equipo = personal.rows.filter(p => p.tipo === TIPO_PERSONAL)
+  const equipo = personal.rows.filter(esEquipoMant)
     .sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`))
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const zona = (id) => zonas.rows.find(z => z.id === id)
